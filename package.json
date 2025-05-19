@@ -1,0 +1,29 @@
+{
+  "name": "doxai",
+  "version": "1.0.0",
+  "description": "GitHub Action to generate documentation for code files in PRs",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "jest"
+  },
+  "keywords": [
+    "github-action",
+    "documentation",
+    "asciidoc",
+    "ai"
+  ],
+  "author": "yybmion",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@vercel/ncc": "^0.38.3",
+    "jest": "^29.7.0"
+  },
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "@actions/github": "^6.0.1",
+    "axios": "^1.9.0",
+    "simple-git": "^3.27.0"
+  }
+}
