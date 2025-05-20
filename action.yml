@@ -1,0 +1,36 @@
+name: 'CodeScribe PR Documentation Generator'
+description: 'An action that automatically creates documentation for code files in merged PRs using AI'
+author: 'yybmion'
+
+inputs:
+  github-token:
+    description: 'GitHub token used for API access'
+    required: true
+    default: ${{ github.token }}
+
+  ai-provider:
+    description: 'AI provider (openai, anthropic, google, azure)'
+    required: false
+    default: 'google'
+
+  ai-model:
+    description: 'AI model to use (gpt-4, claude-3-opus, gemini-1.5-flash, etc.)'
+    required: false
+    default: 'gemini-1.5-flash'
+
+  ai-api-key:
+    description: 'API key for the chosen AI provider'
+    required: true
+
+  language:
+    description: 'Documentation language (ko, en)'
+    required: false
+    default: 'en'
+
+runs:
+  using: 'node16'
+  main: 'src/index.js'
+
+branding:
+  icon: 'book-open'
+  color: 'black'
