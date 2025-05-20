@@ -2,9 +2,9 @@
   "name": "doxai",
   "version": "1.0.0",
   "description": "GitHub Action to generate documentation for code files in PRs",
-  "main": "src/index.js",
+  "main": "src/main.js",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "node src/main.js",
     "test": "jest"
   },
   "keywords": [
