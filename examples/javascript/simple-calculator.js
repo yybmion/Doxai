@@ -31,30 +31,6 @@ class Calculator {
   }
 
   /**
-   * Multiplies the current value by a number
-   * @param {number} num - The number to multiply by
-   * @returns {Calculator} - Returns this instance for method chaining
-   */
-  multiply(num) {
-    this.value *= num;
-    return this;
-  }
-
-  /**
-   * Divides the current value by a number
-   * @param {number} num - The number to divide by
-   * @returns {Calculator} - Returns this instance for method chaining
-   * @throws {Error} - Throws if trying to divide by zero
-   */
-  divide(num) {
-    if (num === 0) {
-      throw new Error('Division by zero is not allowed');
-    }
-    this.value /= num;
-    return this;
-  }
-
-  /**
    * Returns the current calculator value
    * @returns {number} - The current value
    */
