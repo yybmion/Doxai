@@ -98,6 +98,21 @@ function filterFilesByScope(files, scope) {
 }
 
 /**
+ * Make sure the directory exists
+ * @param {string} dirPath - Directory path
+ * @returns {Promise<void>}
+ */
+async function ensureDirectoryExists(dirPath) {
+  try {
+    await fs.mkdir(dirPath, { recursive: true });
+    return true;
+  } catch (error) {
+    console.error(`Error creating directory ${dirPath}:`, error);
+    return false;
+  }
+}
+
+/**
  * Main function
  */
 async function main() {
@@ -163,11 +178,16 @@ async function main() {
     const aiClient = new AIClient();
 
     // Documentation branch name
-    const docsBranch = `docs/${command.project}-pr-${prNumber}`;
+    const docsBranchBase = `docs/${command.project}-pr-${prNumber}`;
 
-    // Create new branch
-    console.log(`Creating documentation branch: ${docsBranch}`);
-    await githubClient.createBranch(prDetails.base, docsBranch);
+    // Create new branch with unique name if needed
+    console.log(`Creating documentation branch: ${docsBranchBase}`);
+    const { branchName: docsBranch, created: branchCreated } =
+        await githubClient.createBranch(prDetails.base, docsBranchBase, true);
+
+    if (!branchCreated) {
+      console.log(`Using existing branch: ${docsBranch}`);
+    }
 
     // Generate documentation for each file
     console.log(`Starting documentation generation for ${filteredFiles.length} files...`);
@@ -188,7 +208,8 @@ async function main() {
 
         // Create documentation filename
         const basename = path.basename(file.filename).split('.')[0];
-        const docFilename = `docs/${command.project}/${basename}.adoc`;
+        const docsDir = `docs/${command.project}`;
+        const docFilename = `${docsDir}/${basename}.adoc`;
 
         // Check if documentation file already exists
         let existingDocContent = null;
@@ -239,7 +260,7 @@ async function main() {
 
     // Summary and PR creation
     if (generatedFiles.length > 0) {
-      // Create PR
+      // Create PR only if it doesn't already exist
       console.log('Creating documentation PR...');
 
       const prBody = `# ${command.project} Documentation Generation
@@ -256,25 +277,43 @@ ${failedFiles.map(f => `- ${f.filename}: ${f.reason}`).join('\n')}
 
 This documentation was automatically generated. Please review and modify the content if needed.`;
 
-      const pr = await githubClient.createPR(
-          `docs: Generate documentation for ${command.project} (PR #${prNumber})`,
-          prBody,
-          docsBranch,
-          prDetails.base
-      );
+      const prTitle = `docs: Generate documentation for ${command.project} (PR #${prNumber})`;
 
-      // Comment on original PR
-      await githubClient.createPRComment(
-          prNumber,
-          `✅ @${payload.comment.user.login} Documentation generation completed.
-        
+      try {
+        const pr = await githubClient.createPR(
+            prTitle,
+            prBody,
+            docsBranch,
+            prDetails.base
+        );
+
+        // Comment on original PR
+        await githubClient.createPRComment(
+            prNumber,
+            `✅ @${payload.comment.user.login} Documentation generation completed.
+          
 Created documentation for ${generatedFiles.length} files in a new PR: ${pr.html_url}
 
 ${failedFiles.length > 0 ? `⚠️ ${failedFiles.length} files failed to process.` : ''}`
-      );
+        );
+      } catch (error) {
+        if (error.message.includes('A pull request already exists')) {
+          // PR already exists
+          await githubClient.createPRComment(
+              prNumber,
+              `✅ @${payload.comment.user.login} Documentation generation completed.
+            
+Updated documentation for ${generatedFiles.length} files. A documentation PR already exists for this branch.
+
+${failedFiles.length > 0 ? `⚠️ ${failedFiles.length} files failed to process.` : ''}`
+          );
+        } else {
+          throw error;
+        }
+      }
 
     } else {
-      // Add branch deletion logic here if needed (when all files fail)
+      // All files failed
       await githubClient.createPRComment(
           prNumber,
           `❌ @${payload.comment.user.login} Documentation generation failed.

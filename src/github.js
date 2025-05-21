@@ -119,13 +119,52 @@ class GitHubClient {
   }
 
   /**
-   * Create a new branch
+   * Check if a branch exists
+   * @param {string} branchName - Branch name to check
+   * @returns {Promise<boolean>} - Whether the branch exists
+   */
+  async branchExists(branchName) {
+    try {
+      await this.octokit.rest.git.getRef({
+        ...this.context,
+        ref: `heads/${branchName}`,
+      });
+      return true;
+    } catch (error) {
+      if (error.status === 404) {
+        return false;
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Create a new branch or get existing branch
    * @param {string} baseBranch - Base branch
    * @param {string} newBranch - New branch name
-   * @returns {Promise<object>} - Result
+   * @param {boolean} generateUnique - Whether to generate a unique name if the branch exists
+   * @returns {Promise<{branchName: string, created: boolean}>} - Created branch info
    */
-  async createBranch(baseBranch, newBranch) {
+  async createBranch(baseBranch, newBranch, generateUnique = true) {
     try {
+      // Check if branch already exists
+      let finalBranchName = newBranch;
+      let branchExists = await this.branchExists(finalBranchName);
+
+      // If branch exists and generateUnique is true, create a unique name
+      if (branchExists && generateUnique) {
+        const timestamp = Math.floor(Date.now() / 1000);
+        finalBranchName = `${newBranch}-${timestamp}`;
+        console.log(`Branch ${newBranch} already exists. Using ${finalBranchName} instead.`);
+        branchExists = await this.branchExists(finalBranchName);
+      }
+
+      // If branch already exists and we're not generating a unique name, return it
+      if (branchExists) {
+        console.log(`Branch ${finalBranchName} already exists. Using existing branch.`);
+        return { branchName: finalBranchName, created: false };
+      }
+
       // Get the latest commit of the base branch
       const { data: refData } = await this.octokit.rest.git.getRef({
         ...this.context,
@@ -137,11 +176,12 @@ class GitHubClient {
       // Create new branch
       const { data } = await this.octokit.rest.git.createRef({
         ...this.context,
-        ref: `refs/heads/${newBranch}`,
+        ref: `refs/heads/${finalBranchName}`,
         sha
       });
 
-      return data;
+      console.log(`Branch ${finalBranchName} created successfully.`);
+      return { branchName: finalBranchName, created: true };
     } catch (error) {
       console.error('Failed to create branch:', error);
       throw new Error(`Failed to create branch ${newBranch}: ${error.message}`);
