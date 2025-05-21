@@ -45,10 +45,10 @@ class AIClient {
         };
 
       case 'google':
+        const combinedPrompt = `${systemPrompt}\n\n${userPrompt}`;
         return {
           contents: [
-            { role: 'system', parts: [{ text: systemPrompt }] },
-            { role: 'user', parts: [{ text: userPrompt }] }
+            { role: 'user', parts: [{ text: combinedPrompt }] }
           ],
           generationConfig: {
             temperature: 0.3,
