@@ -94,7 +94,7 @@ class GitHubClient {
       return Buffer.from(data.content, 'base64').toString();
     } catch (error) {
       console.error('Failed to get file content:', error);
-      return null; // Return null if file doesn't exist
+      throw error;
     }
   }
 

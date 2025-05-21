@@ -273,3 +273,84 @@ ${fileContent}
 `;
   }
 }
+
+function createUpdateDocsPrompt(filename, fileContent, existingDocContent, prDetails, language = 'ko') {
+  const fileExtension = filename.split('.').pop().toLowerCase();
+  const codeLanguage = codeLanguageMap[fileExtension] || fileExtension;
+
+  if (language === 'ko') {
+    return `
+# 코드 문서 업데이트 요청
+
+다음 ${codeLanguage} 파일이 PR에서 변경되었습니다. 기존 문서를 업데이트해 주세요.
+
+## PR 정보
+- PR 번호: ${prDetails.number}
+- 작성자: ${prDetails.author}
+- 작성일: ${new Date(prDetails.createdAt).toISOString().split('T')[0]}
+- 마지막 수정: ${new Date(prDetails.updatedAt).toISOString().split('T')[0]} by ${prDetails.mergedBy || prDetails.author}
+
+## 파일 정보
+- 파일명: ${filename}
+- 언어: ${codeLanguage}
+
+## 현재 코드
+\`\`\`${codeLanguage}
+${fileContent}
+\`\`\`
+
+## 기존 문서
+\`\`\`asciidoc
+${existingDocContent}
+\`\`\`
+
+## 요청사항
+1. 기존 문서를 유지하면서 변경된 코드를 반영하여 업데이트해주세요.
+2. 새로운 메소드나 기능이 추가된 경우 해당 내용을 문서에 추가해주세요.
+3. 제거된 메소드나 기능이 있다면 해당 내용을 문서에서 제거해주세요.
+4. 변경된 내용에 대해서만 업데이트하고, 나머지 부분은 그대로 유지해주세요.
+5. AsciiDoc 형식을 유지해주세요.
+6. 업데이트된 AsciiDoc 문서 전체를 반환해주세요.
+`;
+  } else {
+    return `
+# Documentation Update Request
+
+The following ${codeLanguage} file has been modified in a PR. Please update the existing documentation.
+
+## PR Information
+- PR Number: ${prDetails.number}
+- Author: ${prDetails.author}
+- Created Date: ${new Date(prDetails.createdAt).toISOString().split('T')[0]}
+- Last Modified: ${new Date(prDetails.updatedAt).toISOString().split('T')[0]} by ${prDetails.mergedBy || prDetails.author}
+
+## File Information
+- Filename: ${filename}
+- Language: ${codeLanguage}
+
+## Current Code
+\`\`\`${codeLanguage}
+${fileContent}
+\`\`\`
+
+## Existing Documentation
+\`\`\`asciidoc
+${existingDocContent}
+\`\`\`
+
+## Requirements
+1. Update the existing documentation to reflect the changes in the code.
+2. Add documentation for any new methods or features.
+3. Remove documentation for any removed methods or features.
+4. Only update the relevant parts and keep the rest of the documentation intact.
+5. Maintain the AsciiDoc format.
+6. Return the complete updated AsciiDoc document.
+`;
+  }
+}
+
+module.exports = {
+  docsPromptTemplates,
+  createDocsPrompt,
+  createUpdateDocsPrompt
+};

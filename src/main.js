@@ -3,7 +3,7 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 const GitHubClient = require('./github');
 const AIClient = require('./ai-client');
-const { docsPromptTemplates, createDocsPrompt } = require('./docs-prompt');
+const { docsPromptTemplates, createDocsPrompt, createUpdateDocsPrompt } = require('./docs-prompt');
 const config = require('./config');
 const fs = require('fs').promises;
 
@@ -58,23 +58,39 @@ function parseCommand(commentBody) {
  * @returns {Array} - Filtered file list
  */
 function filterFilesByScope(files, scope) {
+  console.log('All files before filtering:', files.map(f => f.filename));
+
   if (scope === 'all') {
     return files;
   }
 
   if (scope.startsWith('include:')) {
-    const filenames = scope.substring(8).split(',');
-    return files.filter(file => {
+    const patterns = scope.substring(8).split(',');
+    console.log('Include patterns:', patterns);
+
+    const filtered = files.filter(file => {
       const basename = path.basename(file.filename);
-      return filenames.includes(basename);
+
+      return patterns.some(pattern =>
+          basename === pattern ||
+          basename.includes(pattern) ||
+          file.filename.includes(pattern)
+      );
     });
+
+    console.log('Filtered files:', filtered.map(f => f.filename));
+    return filtered;
   }
 
   if (scope.startsWith('exclude:')) {
-    const filenames = scope.substring(8).split(',');
+    const patterns = scope.substring(8).split(',');
     return files.filter(file => {
       const basename = path.basename(file.filename);
-      return !filenames.includes(basename);
+      return !patterns.some(pattern =>
+          basename === pattern ||
+          basename.includes(pattern) ||
+          file.filename.includes(pattern)
+      );
     });
   }
 
@@ -170,24 +186,43 @@ async function main() {
           continue;
         }
 
-        // Generate documentation
-        console.log(`Generating documentation for: ${file.filename}`);
-        const systemPrompt = docsPromptTemplates[command.lang] || docsPromptTemplates.en;
-        const userPrompt = createDocsPrompt(file.filename, content, prDetails, command.lang);
-
-        // Send request to AI
-        const documentContent = await aiClient.sendPrompt(systemPrompt, userPrompt);
-
         // Create documentation filename
         const basename = path.basename(file.filename).split('.')[0];
         const docFilename = `docs/${command.project}/${basename}.adoc`;
+
+        // Check if documentation file already exists
+        let existingDocContent = null;
+        let isUpdate = false;
+        try {
+          existingDocContent = await githubClient.getFileContent(docFilename, prDetails.base);
+          console.log(`Existing documentation found for ${file.filename}`);
+          isUpdate = true;
+        } catch (error) {
+          console.log(`No existing documentation for ${file.filename}, creating new`);
+        }
+
+        // Generate documentation
+        console.log(`${isUpdate ? 'Updating' : 'Generating'} documentation for: ${file.filename}`);
+        const systemPrompt = docsPromptTemplates[command.lang] || docsPromptTemplates.en;
+
+        let userPrompt;
+        if (isUpdate && existingDocContent) {
+          // Update existing documentation
+          userPrompt = createUpdateDocsPrompt(file.filename, content, existingDocContent, prDetails, command.lang);
+        } else {
+          // Create new documentation
+          userPrompt = createDocsPrompt(file.filename, content, prDetails, command.lang);
+        }
+
+        // Send request to AI
+        const documentContent = await aiClient.sendPrompt(systemPrompt, userPrompt);
 
         // Commit documentation file
         await githubClient.commitFile(
             docsBranch,
             docFilename,
             documentContent,
-            `docs: Generate documentation for ${basename} (PR #${prNumber})`
+            `docs: ${isUpdate ? 'Update' : 'Generate'} documentation for ${basename} (PR #${prNumber})`
         );
 
         generatedFiles.push(docFilename);
