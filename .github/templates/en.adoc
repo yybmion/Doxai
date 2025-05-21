@@ -1,0 +1,45 @@
+= {Class/File Name}
+:toc:
+:source-highlighter: highlight.js
+
+== Overview
+
+The `{Class/File Name}` is responsible for {main functionality description}.
+
+[cols="1,3"]
+|===
+|PR Number|#{PR Number}
+|Author|@{Author}
+|Created Date|{Creation Date}
+|Last Modified|{Last Modified Date} by @{Modifier}
+|===
+
+== Description
+
+{Detailed description of the class/file}
+
+== Dependencies
+
+* `{Dependency1}` - {Description}
+* `{Dependency2}` - {Description}
+
+== Key Methods
+
+=== {MethodName}({Parameters})
+
+[source,{language}]
+----
+{Method code example}
+----
+
+*Purpose*: {Method purpose}
+
+*Parameters*:
+
+* `{ParameterName}` - {Description}
+
+*Return Value*: {Return value description}
+
+*Exceptions*:
+
+* `{ExceptionName}` - {Description}
