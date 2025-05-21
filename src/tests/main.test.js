@@ -88,55 +88,50 @@ describe('Main script functionality', () => {
 
     // Set up GitHub context
     require('@actions/github').context.payload = {
-      issue: {
-        number: 123,
-        pull_request: {}
-      },
+      issue: { number: 123, pull_request: {} },
       comment: {
-        body: '@test-project --scope all --lang en',
-        user: {
-          login: 'test-user'
-        }
+        body: '!doxai',
+        user: { login: 'test-user' }
       }
     };
   });
 
   describe('parseCommand function', () => {
     it('should correctly parse command with default options', () => {
-      const result = parseCommand('@test-project');
+      const result = parseCommand('!doxai');
 
       expect(result).toEqual({
-        project: 'test-project',
+        project: 'doxai',
         scope: 'all',
         lang: 'en'
       });
     });
 
     it('should parse scope option correctly', () => {
-      const result = parseCommand('@test-project --scope include:file1.js,file2.js');
+      const result = parseCommand('!doxai --scope include:file1.js,file2.js');
 
       expect(result).toEqual({
-        project: 'test-project',
+        project: 'doxai',
         scope: 'include:file1.js,file2.js',
         lang: 'en'
       });
     });
 
     it('should parse language option correctly', () => {
-      const result = parseCommand('@test-project --lang ko');
+      const result = parseCommand('!doxai --lang ko');
 
       expect(result).toEqual({
-        project: 'test-project',
+        project: 'doxai',
         scope: 'all',
         lang: 'ko'
       });
     });
 
     it('should parse multiple options correctly', () => {
-      const result = parseCommand('@test-project --scope exclude:test.js --lang ko');
+      const result = parseCommand('!doxai --scope exclude:test.js --lang ko');
 
       expect(result).toEqual({
-        project: 'test-project',
+        project: 'doxai',
         scope: 'exclude:test.js',
         lang: 'ko'
       });
@@ -185,7 +180,7 @@ describe('Main script functionality', () => {
       require('@actions/github').context.payload = {
         issue: { number: 123, pull_request: {} },
         comment: {
-          body: '@test-project',
+          body: '!doxai',
           user: { login: 'test-user' }
         }
       };
@@ -215,7 +210,7 @@ describe('Main script functionality', () => {
       require('@actions/github').context.payload = {
         issue: { number: 123, pull_request: {} },
         comment: {
-          body: '@test-project',
+          body: '!doxai',
           user: { login: 'test-user' }
         }
       };
@@ -244,7 +239,7 @@ describe('Main script functionality', () => {
       require('@actions/github').context.payload = {
         issue: { number: 123, pull_request: {} },
         comment: {
-          body: '@test-project',
+          body: '!doxai',
           user: { login: 'test-user' }
         }
       };
@@ -285,7 +280,7 @@ describe('Main script functionality', () => {
 
       // Verify
       expect(mockGitHubClient.getChangedFiles).toHaveBeenCalledWith(123);
-      expect(mockGitHubClient.createBranch).toHaveBeenCalledWith('main', expect.stringContaining('docs/test-project'));
+      expect(mockGitHubClient.createBranch).toHaveBeenCalledWith('main', expect.stringContaining('docs/doxai'));
       expect(mockGitHubClient.getFileContent).toHaveBeenCalledWith('src/file1.js', 'feature-branch');
       expect(mockAIClient.sendPrompt).toHaveBeenCalled();
       expect(mockGitHubClient.commitFile).toHaveBeenCalled();
@@ -300,7 +295,7 @@ describe('Main script functionality', () => {
       require('@actions/github').context.payload = {
         issue: { number: 123, pull_request: {} },
         comment: {
-          body: '@test-project',
+          body: '!doxai',
           user: { login: 'test-user' }
         }
       };
@@ -325,7 +320,7 @@ describe('Main script functionality', () => {
       require('@actions/github').context.payload = {
         issue: { number: 123, pull_request: {} },
         comment: {
-          body: '@test-project',
+          body: '!doxai',
           user: { login: 'test-user' }
         }
       };
@@ -368,7 +363,7 @@ describe('Main script functionality', () => {
       require('@actions/github').context.payload = {
         issue: { number: 123, pull_request: {} },
         comment: {
-          body: '@test-project',
+          body: '!doxai',
           user: { login: 'test-user' }
         }
       };
