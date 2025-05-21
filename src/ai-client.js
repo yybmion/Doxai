@@ -1,5 +1,5 @@
 const axios = require('axios');
-const config = require('../config');
+const config = require('./config');
 
 /**
  * Class that creates request formats according to AI provider
@@ -88,7 +88,7 @@ class AIClient {
         return {
           'Content-Type': 'application/json',
           'x-api-key': this.apiKey,
-          'anthropic-version': '2023-06-01'
+          'anthropic-version': '2025-05-01'
         };
 
       case 'google':

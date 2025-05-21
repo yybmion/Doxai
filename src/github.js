@@ -1,6 +1,6 @@
 const { getOctokit } = require('@actions/github');
 const core = require('@actions/core');
-const config = require('../config');
+const config = require('./config');
 
 /**
  * GitHub API related utilities

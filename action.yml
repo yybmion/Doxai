@@ -28,7 +28,7 @@ inputs:
     default: 'en'
 
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'src/main.js'
 
 branding:

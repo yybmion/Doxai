@@ -1,9 +1,9 @@
 const path = require('path');
 const core = require('@actions/core');
 const github = require('@actions/github');
-const GitHubClient = require('./utils/github');
-const AIClient = require('./utils/ai-client');
-const { docsPromptTemplates, createDocsPrompt } = require('./prompts/docs-prompt');
+const GitHubClient = require('./github');
+const AIClient = require('./ai-client');
+const { docsPromptTemplates, createDocsPrompt } = require('./docs-prompt');
 const config = require('./config');
 const fs = require('fs').promises;
 
@@ -270,3 +270,9 @@ Main error: ${failedFiles[0]?.reason || 'Unknown error'}`
 
 // Execute main function
 main();
+
+module.exports = {
+  main,
+  parseCommand,
+  filterFilesByScope
+};
