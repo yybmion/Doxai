@@ -13,8 +13,7 @@ const fs = require('fs').promises;
  * @returns {object|null} - Parsing result or null
  */
 function parseCommand(commentBody) {
-  // Parse @(projectName) [options...] format
-  const commandRegex = /@\(([^)]+)\)(.*)/;
+  const commandRegex = /@([a-zA-Z0-9_-]+)(.*)/;
   const match = commentBody.match(commandRegex);
 
   if (!match) {

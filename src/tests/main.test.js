@@ -37,6 +37,14 @@ jest.mock('fs', () => ({
   }
 }));
 
+jest.mock('../docs-prompt', () => ({
+  docsPromptTemplates: {
+    en: 'English template mock for testing',
+    ko: 'Korean template mock for testing'
+  },
+  createDocsPrompt: jest.fn().mockReturnValue('Test prompt')
+}));
+
 // Import mocked classes and functions
 const GitHubClient = require('../github');
 const AIClient = require('../ai-client');
@@ -85,7 +93,7 @@ describe('Main script functionality', () => {
         pull_request: {}
       },
       comment: {
-        body: '@(test-project) --scope all --lang en',
+        body: '@test-project --scope all --lang en',
         user: {
           login: 'test-user'
         }
@@ -95,7 +103,7 @@ describe('Main script functionality', () => {
 
   describe('parseCommand function', () => {
     it('should correctly parse command with default options', () => {
-      const result = parseCommand('@(test-project)');
+      const result = parseCommand('@test-project');
 
       expect(result).toEqual({
         project: 'test-project',
@@ -105,7 +113,7 @@ describe('Main script functionality', () => {
     });
 
     it('should parse scope option correctly', () => {
-      const result = parseCommand('@(test-project) --scope include:file1.js,file2.js');
+      const result = parseCommand('@test-project --scope include:file1.js,file2.js');
 
       expect(result).toEqual({
         project: 'test-project',
@@ -115,7 +123,7 @@ describe('Main script functionality', () => {
     });
 
     it('should parse language option correctly', () => {
-      const result = parseCommand('@(test-project) --lang ko');
+      const result = parseCommand('@test-project --lang ko');
 
       expect(result).toEqual({
         project: 'test-project',
@@ -125,7 +133,7 @@ describe('Main script functionality', () => {
     });
 
     it('should parse multiple options correctly', () => {
-      const result = parseCommand('@(test-project) --scope exclude:test.js --lang ko');
+      const result = parseCommand('@test-project --scope exclude:test.js --lang ko');
 
       expect(result).toEqual({
         project: 'test-project',
@@ -177,7 +185,7 @@ describe('Main script functionality', () => {
       require('@actions/github').context.payload = {
         issue: { number: 123, pull_request: {} },
         comment: {
-          body: '@(test-project)',
+          body: '@test-project',
           user: { login: 'test-user' }
         }
       };
@@ -207,7 +215,7 @@ describe('Main script functionality', () => {
       require('@actions/github').context.payload = {
         issue: { number: 123, pull_request: {} },
         comment: {
-          body: '@(test-project)',
+          body: '@test-project',
           user: { login: 'test-user' }
         }
       };
@@ -236,7 +244,7 @@ describe('Main script functionality', () => {
       require('@actions/github').context.payload = {
         issue: { number: 123, pull_request: {} },
         comment: {
-          body: '@(test-project)',
+          body: '@test-project',
           user: { login: 'test-user' }
         }
       };
@@ -292,7 +300,7 @@ describe('Main script functionality', () => {
       require('@actions/github').context.payload = {
         issue: { number: 123, pull_request: {} },
         comment: {
-          body: '@(test-project)',
+          body: '@test-project',
           user: { login: 'test-user' }
         }
       };
@@ -317,7 +325,7 @@ describe('Main script functionality', () => {
       require('@actions/github').context.payload = {
         issue: { number: 123, pull_request: {} },
         comment: {
-          body: '@(test-project)',
+          body: '@test-project',
           user: { login: 'test-user' }
         }
       };
@@ -360,7 +368,7 @@ describe('Main script functionality', () => {
       require('@actions/github').context.payload = {
         issue: { number: 123, pull_request: {} },
         comment: {
-          body: '@(test-project)',
+          body: '@test-project',
           user: { login: 'test-user' }
         }
       };
