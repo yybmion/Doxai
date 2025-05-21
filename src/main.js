@@ -13,7 +13,7 @@ const fs = require('fs').promises;
  * @returns {object|null} - Parsing result or null
  */
 function parseCommand(commentBody) {
-  const commandRegex = /@([a-zA-Z0-9_-]+)(.*)/;
+  const commandRegex = /!([a-zA-Z0-9_-]+)(.*)/;
   const match = commentBody.match(commandRegex);
 
   if (!match) {
@@ -22,6 +22,10 @@ function parseCommand(commentBody) {
 
   const project = match[1];
   const options = match[2].trim();
+
+  if (project !== 'doxai') {
+    return null;
+  }
 
   // Set default values
   const result = {
