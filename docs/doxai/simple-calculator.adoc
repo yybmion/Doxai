@@ -1,0 +1,147 @@
+= Calculator
+:toc:
+:source-highlighter: highlight.js
+
+== Overview
+
+The `Calculator` is responsible for performing basic arithmetic operations (addition and subtraction). It maintains an internal value and allows for adding, subtracting, retrieving, and resetting this value.  It acts as a simple utility class for calculations.
+
+[cols="1,3"]
+|===
+|PR Number|#2
+|Author|@{yybmion}
+|Created Date|2025-05-21
+|Last Modified|2025-05-21 by @{yybmion}
+|===
+
+== Detailed Description
+
+The `Calculator` class provides a straightforward implementation of basic arithmetic.  It uses a single internal `value` property to store the current result of calculations. Methods are chained to allow for concise sequences of operations. The constructor allows for initializing the calculator with an optional starting value.  The design prioritizes simplicity and ease of use for basic arithmetic tasks.  No error handling is implemented beyond basic type assumptions inherent in the JavaScript language.
+
+
+== Main Use Cases
+
+[source,javascript]
+----
+// Simple example code using this class
+const calc = new Calculator(5);
+const result = calc.add(3).subtract(2).getValue(); // result will be 6
+console.log(result);
+----
+
+== Dependencies
+
+* None
+
+
+== Key Methods
+
+=== add(num)
+
+[source,javascript]
+----
+this.value += num;
+return this;
+----
+
+*Purpose*: Adds the provided number (`num`) to the internal `value` of the calculator.
+
+*Parameters*:
+
+* `num` - {number} The number to be added.
+
+*Return Value*: {Calculator} Returns the `Calculator` instance itself, enabling method chaining.
+
+*Exceptions*:
+
+* None explicitly handled in the code.  JavaScript's type coercion may lead to unexpected results if `num` is not a number.
+
+*Usage Example*:
+
+[source,javascript]
+----
+const calc = new Calculator();
+calc.add(5); // adds 5 to the internal value
+----
+
+=== subtract(num)
+
+[source,javascript]
+----
+this.value -= num;
+return this;
+----
+
+*Purpose*: Subtracts the provided number (`num`) from the internal `value` of the calculator.
+
+*Parameters*:
+
+* `num` - {number} The number to be subtracted.
+
+*Return Value*: {Calculator} Returns the `Calculator` instance itself, enabling method chaining.
+
+*Exceptions*:
+
+* None explicitly handled in the code. JavaScript's type coercion may lead to unexpected results if `num` is not a number.
+
+*Usage Example*:
+
+[source,javascript]
+----
+const calc = new Calculator(10);
+calc.subtract(3); // subtracts 3 from the internal value
+----
+
+=== getValue()
+
+*Purpose*: Returns the current value stored in the calculator.
+
+*Parameters*: None
+
+*Return Value*: {number} The current value of the calculator.
+
+*Exceptions*: None
+
+*Usage Example*:
+
+[source,javascript]
+----
+const calc = new Calculator(7);
+const currentValue = calc.getValue(); // currentValue will be 7
+----
+
+=== reset(value = 0)
+
+[source,javascript]
+----
+this.value = value;
+return this;
+----
+
+*Purpose*: Resets the calculator's internal value to the provided value (defaults to 0).
+
+*Parameters*:
+
+* `value` - {number} The value to reset the calculator to. Defaults to 0.
+
+*Return Value*: {Calculator} Returns the `Calculator` instance itself, enabling method chaining.
+
+*Exceptions*:
+
+* None explicitly handled in the code. JavaScript's type coercion may lead to unexpected results if `value` is not a number.
+
+*Usage Example*:
+
+[source,javascript]
+----
+const calc = new Calculator(5);
+calc.reset(10); // resets the value to 10
+----
+
+
+== Important Notes
+
+* The calculator performs only basic addition and subtraction. More complex operations are not supported.
+* No error handling is implemented for invalid input types.  The code relies on JavaScript's implicit type coercion.
+* The internal value is directly modified by the methods.  There is no immutability.
+
