@@ -1,0 +1,19 @@
+name: Doxai Documentation Generator
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  docs:
+    if: contains(github.event.comment.body, '@(')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Generate Documentation
+        uses: ./
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          ai-provider: 'google'
+          ai-model: 'gemini-1.5-flash'
+          ai-api-key: ${{ secrets.AI_API_KEY }}
+          language: 'en'
