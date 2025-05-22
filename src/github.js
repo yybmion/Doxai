@@ -15,6 +15,135 @@ class GitHubClient {
   }
 
   /**
+   * Find existing documentation PR for a specific source PR
+   * @param {number} sourcePrNumber - Source PR number
+   * @param {string} project - Project name (e.g., 'doxai')
+   * @returns {Promise<object|null>} - Existing PR info or null
+   */
+  async findExistingDocsPR(sourcePrNumber, project) {
+    try {
+      // Search for PRs with specific title pattern
+      const titlePattern = `docs: Generate documentation for ${project} (PR #${sourcePrNumber})`;
+
+      // Get all open PRs
+      const { data: prs } = await this.octokit.rest.pulls.list({
+        ...this.context,
+        state: 'open',
+        per_page: 100
+      });
+
+      // Find PR with matching title or head branch pattern
+      const branchPattern = `docs/${project}-pr-${sourcePrNumber}`;
+
+      const existingPR = prs.find(pr =>
+          pr.title === titlePattern ||
+          pr.head.ref.startsWith(branchPattern)
+      );
+
+      if (existingPR) {
+        console.log(`Found existing documentation PR: #${existingPR.number} (${existingPR.head.ref})`);
+        return {
+          number: existingPR.number,
+          title: existingPR.title,
+          url: existingPR.html_url,
+          head: existingPR.head.ref,
+          base: existingPR.base.ref
+        };
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error finding existing docs PR:', error);
+      return null;
+    }
+  }
+
+
+
+  /**
+   * Create a new branch or get existing branch (improved version)
+   * @param {string} baseBranch - Base branch
+   * @param {string} newBranch - New branch name
+   * @param {number} sourcePrNumber - Source PR number for documentation
+   * @param {string} project - Project name
+   * @returns {Promise<{branchName: string, created: boolean, existingPR: object|null}>}
+   */
+  async createOrGetDocsBranch(baseBranch, newBranch, sourcePrNumber, project) {
+    try {
+      // First, check if there's an existing documentation PR for this source PR
+      const existingPR = await this.findExistingDocsPR(sourcePrNumber, project);
+
+      if (existingPR) {
+        console.log(`Using existing documentation branch: ${existingPR.head}`);
+        return {
+          branchName: existingPR.head,
+          created: false,
+          existingPR: existingPR
+        };
+      }
+
+      // Check if the exact branch name exists
+      let finalBranchName = newBranch;
+      let branchExists = await this.branchExists(finalBranchName);
+
+      // If branch exists but no PR found, create a unique name
+      if (branchExists) {
+        const timestamp = Math.floor(Date.now() / 1000);
+        finalBranchName = `${newBranch}-${timestamp}`;
+        console.log(`Branch ${newBranch} exists but no PR found. Using ${finalBranchName} instead.`);
+        branchExists = await this.branchExists(finalBranchName);
+      }
+
+      // If the new branch name also exists, use it anyway (shouldn't happen often)
+      if (branchExists) {
+        console.log(`Branch ${finalBranchName} already exists. Using existing branch.`);
+        return { branchName: finalBranchName, created: false, existingPR: null };
+      }
+
+      // Get the latest commit of the base branch
+      const { data: refData } = await this.octokit.rest.git.getRef({
+        ...this.context,
+        ref: `heads/${baseBranch}`,
+      });
+
+      const sha = refData.object.sha;
+
+      // Create new branch
+      await this.octokit.rest.git.createRef({
+        ...this.context,
+        ref: `refs/heads/${finalBranchName}`,
+        sha
+      });
+
+      console.log(`Branch ${finalBranchName} created successfully.`);
+      return { branchName: finalBranchName, created: true, existingPR: null };
+    } catch (error) {
+      console.error('Failed to create or get docs branch:', error);
+      throw new Error(`Failed to create or get docs branch ${newBranch}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Check if a branch exists
+   * @param {string} branchName - Branch name to check
+   * @returns {Promise<boolean>} - Whether the branch exists
+   */
+  async branchExists(branchName) {
+    try {
+      await this.octokit.rest.git.getRef({
+        ...this.context,
+        ref: `heads/${branchName}`,
+      });
+      return true;
+    } catch (error) {
+      if (error.status === 404) {
+        return false;
+      }
+      throw error;
+    }
+  }
+
+  /**
    * Get PR details
    * @param {number} prNumber - PR number
    * @returns {Promise<object>} - PR information
@@ -115,76 +244,6 @@ class GitHubClient {
     } catch (error) {
       console.error('Failed to create PR comment:', error);
       throw new Error(`Failed to create comment on PR #${prNumber}: ${error.message}`);
-    }
-  }
-
-  /**
-   * Check if a branch exists
-   * @param {string} branchName - Branch name to check
-   * @returns {Promise<boolean>} - Whether the branch exists
-   */
-  async branchExists(branchName) {
-    try {
-      await this.octokit.rest.git.getRef({
-        ...this.context,
-        ref: `heads/${branchName}`,
-      });
-      return true;
-    } catch (error) {
-      if (error.status === 404) {
-        return false;
-      }
-      throw error;
-    }
-  }
-
-  /**
-   * Create a new branch or get existing branch
-   * @param {string} baseBranch - Base branch
-   * @param {string} newBranch - New branch name
-   * @param {boolean} generateUnique - Whether to generate a unique name if the branch exists
-   * @returns {Promise<{branchName: string, created: boolean}>} - Created branch info
-   */
-  async createBranch(baseBranch, newBranch, generateUnique = true) {
-    try {
-      // Check if branch already exists
-      let finalBranchName = newBranch;
-      let branchExists = await this.branchExists(finalBranchName);
-
-      // If branch exists and generateUnique is true, create a unique name
-      if (branchExists && generateUnique) {
-        const timestamp = Math.floor(Date.now() / 1000);
-        finalBranchName = `${newBranch}-${timestamp}`;
-        console.log(`Branch ${newBranch} already exists. Using ${finalBranchName} instead.`);
-        branchExists = await this.branchExists(finalBranchName);
-      }
-
-      // If branch already exists and we're not generating a unique name, return it
-      if (branchExists) {
-        console.log(`Branch ${finalBranchName} already exists. Using existing branch.`);
-        return { branchName: finalBranchName, created: false };
-      }
-
-      // Get the latest commit of the base branch
-      const { data: refData } = await this.octokit.rest.git.getRef({
-        ...this.context,
-        ref: `heads/${baseBranch}`,
-      });
-
-      const sha = refData.object.sha;
-
-      // Create new branch
-      const { data } = await this.octokit.rest.git.createRef({
-        ...this.context,
-        ref: `refs/heads/${finalBranchName}`,
-        sha
-      });
-
-      console.log(`Branch ${finalBranchName} created successfully.`);
-      return { branchName: finalBranchName, created: true };
-    } catch (error) {
-      console.error('Failed to create branch:', error);
-      throw new Error(`Failed to create branch ${newBranch}: ${error.message}`);
     }
   }
 
