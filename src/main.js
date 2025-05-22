@@ -98,6 +98,51 @@ function filterFilesByScope(files, scope) {
 }
 
 /**
+ * Check if source file has changed since last documentation generation
+ * @param {object} githubClient - GitHub client instance
+ * @param {string} sourceFilename - Source file name
+ * @param {string} docFilename - Documentation file name
+ * @param {string} docsBranch - Documentation branch
+ * @param {string} sourceBranch - Source branch (head of PR)
+ * @returns {Promise<boolean>} - Whether the source file has changed
+ */
+async function hasSourceFileChanged(githubClient, sourceFilename, docFilename, docsBranch, sourceBranch) {
+  try {
+    const { data: commits } = await githubClient.octokit.rest.repos.listCommits({
+      ...githubClient.context,
+      path: docFilename,
+      sha: docsBranch,
+      per_page: 1
+    });
+
+    if (commits.length === 0) {
+      return true;
+    }
+
+    const lastDocCommitDate = new Date(commits[0].commit.committer.date);
+
+    const { data: sourceCommits } = await githubClient.octokit.rest.repos.listCommits({
+      ...githubClient.context,
+      path: sourceFilename,
+      sha: sourceBranch,
+      per_page: 1
+    });
+
+    if (sourceCommits.length === 0) {
+      return false;
+    }
+
+    const lastSourceCommitDate = new Date(sourceCommits[0].commit.committer.date);
+
+    return lastSourceCommitDate > lastDocCommitDate;
+
+  } catch (error) {
+    console.log(`Could not check file change status for ${sourceFilename}, assuming changed`);
+    return true;
+  }
+}
+
+/**
  * Main function
  */
 async function main() {
@@ -183,6 +228,7 @@ async function main() {
 
     const generatedFiles = [];
     const updatedFiles = [];
+    const skippedFiles = [];
     const failedFiles = [];
 
     for (const file of filteredFiles) {
@@ -201,21 +247,46 @@ async function main() {
         const docsDir = `docs/${command.project}`;
         const docFilename = `${docsDir}/${basename}.adoc`;
 
-        // Check if documentation file already exists in the docs branch
+        // Check if documentation file already exists
         let existingDocContent = null;
         let isUpdate = false;
+        let hasExistingDoc = false;
+
         try {
           existingDocContent = await githubClient.getFileContent(docFilename, docsBranch);
-          console.log(`Existing documentation found for ${file.filename} in docs branch`);
+          hasExistingDoc = true;
           isUpdate = true;
+          console.log(`Existing documentation found for ${file.filename} in docs branch`);
         } catch (error) {
-          // If not found in docs branch, check in base branch
           try {
             existingDocContent = await githubClient.getFileContent(docFilename, prDetails.base);
-            console.log(`Existing documentation found for ${file.filename} in base branch`);
+            hasExistingDoc = true;
             isUpdate = true;
+            console.log(`Existing documentation found for ${file.filename} in base branch`);
           } catch (baseError) {
             console.log(`No existing documentation for ${file.filename}, creating new`);
+            hasExistingDoc = false;
+            isUpdate = false;
+          }
+        }
+
+        if (hasExistingDoc) {
+          const sourceChanged = await hasSourceFileChanged(
+              githubClient,
+              file.filename,
+              docFilename,
+              docsBranch,
+              prDetails.head
+          );
+
+          if (!sourceChanged) {
+            console.log(`Skipping ${file.filename} - source file hasn't changed since last documentation`);
+            skippedFiles.push({
+              filename: file.filename,
+              docFilename: docFilename,
+              reason: 'Source file unchanged since last documentation'
+            });
+            continue;
           }
         }
 
@@ -262,27 +333,37 @@ async function main() {
     // Summary and PR creation/update
     const totalProcessedFiles = generatedFiles.length + updatedFiles.length;
 
-    if (totalProcessedFiles > 0) {
+    if (totalProcessedFiles > 0 || skippedFiles.length > 0) { // skippedFiles 조건 추가
       let prUrl;
 
       if (existingPR) {
         // Use existing PR
         prUrl = existingPR.url;
-        console.log(`Updated existing documentation PR: ${prUrl}`);
 
-        // Add comment to existing PR about the update
-        await githubClient.createPRComment(
-            existingPR.number,
-            `📝 Documentation updated for PR #${prNumber} by @${payload.comment.user.login}
-            
-**Files processed in this update:**
-${generatedFiles.length > 0 ? `\n**New documentation:**\n${generatedFiles.map(file => `- ${file}`).join('\n')}` : ''}
-${updatedFiles.length > 0 ? `\n**Updated documentation:**\n${updatedFiles.map(file => `- ${file}`).join('\n')}` : ''}
+        // 기존 문서 PR에 상세한 업데이트 댓글 추가
+        let updateComment = `📝 Documentation updated for PR #${prNumber} by @${payload.comment.user.login}\n`;
 
-${failedFiles.length > 0 ? `\n**Failed files:**\n${failedFiles.map(f => `- ${f.filename}: ${f.reason}`).join('\n')}` : ''}
+        if (generatedFiles.length > 0) {
+          updateComment += `\n**New documentation:**\n${generatedFiles.map(file => `- ${file}`).join('\n')}`;
+        }
 
-Command: \`${commentBody}\``
-        );
+        if (updatedFiles.length > 0) {
+          updateComment += `\n**Updated documentation:**\n${updatedFiles.map(file => `- ${file}`).join('\n')}`;
+        }
+
+        // *** 새로 추가되는 부분 ***
+        if (skippedFiles.length > 0) {
+          updateComment += `\n**Skipped (unchanged):**\n${skippedFiles.map(file => `- ${file.docFilename} (${file.reason})`).join('\n')}`;
+        }
+        // *** 새로 추가되는 부분 끝 ***
+
+        if (failedFiles.length > 0) {
+          updateComment += `\n**Failed:**\n${failedFiles.map(f => `- ${f.filename}: ${f.reason}`).join('\n')}`;
+        }
+
+        updateComment += `\n\nCommand: \`${commentBody}\``;
+
+        await githubClient.createPRComment(existingPR.number, updateComment);
       } else {
         // Create new PR
         console.log('Creating new documentation PR...');
@@ -325,6 +406,16 @@ This documentation was automatically generated. Please review and modify the con
           }
         }
       }
+
+      let summaryComment = `✅ @${payload.comment.user.login} Documentation generation completed.\n\n`;
+      summaryComment += `${existingPR ? 'Updated' : 'Created'} documentation: ${prUrl}\n\n`;
+
+      if (generatedFiles.length > 0) summaryComment += `**New:** ${generatedFiles.length} files\n`;
+      if (updatedFiles.length > 0) summaryComment += `**Updated:** ${updatedFiles.length} files\n`;
+      if (skippedFiles.length > 0) summaryComment += `**Skipped:** ${skippedFiles.length} files (unchanged)\n`;
+      if (failedFiles.length > 0) summaryComment += `**Failed:** ${failedFiles.length} files\n`;
+
+      await githubClient.createPRComment(prNumber, summaryComment);
 
       // Comment on original PR
       await githubClient.createPRComment(
