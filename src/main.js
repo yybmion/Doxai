@@ -98,21 +98,6 @@ function filterFilesByScope(files, scope) {
 }
 
 /**
- * Make sure the directory exists
- * @param {string} dirPath - Directory path
- * @returns {Promise<void>}
- */
-async function ensureDirectoryExists(dirPath) {
-  try {
-    await fs.mkdir(dirPath, { recursive: true });
-    return true;
-  } catch (error) {
-    console.error(`Error creating directory ${dirPath}:`, error);
-    return false;
-  }
-}
-
-/**
  * Main function
  */
 async function main() {
@@ -177,22 +162,27 @@ async function main() {
     // Initialize AI client
     const aiClient = new AIClient();
 
-    // Documentation branch name
+    // Documentation branch name base
     const docsBranchBase = `docs/${command.project}-pr-${prNumber}`;
 
-    // Create new branch with unique name if needed
-    console.log(`Creating documentation branch: ${docsBranchBase}`);
-    const { branchName: docsBranch, created: branchCreated } =
-        await githubClient.createBranch(prDetails.base, docsBranchBase, true);
+    // Create or get existing documentation branch
+    console.log(`Checking for existing documentation branch for PR #${prNumber}...`);
+    const { branchName: docsBranch, created: branchCreated, existingPR } =
+        await githubClient.createOrGetDocsBranch(prDetails.base, docsBranchBase, prNumber, command.project);
 
-    if (!branchCreated) {
+    if (existingPR) {
+      console.log(`Found existing documentation PR #${existingPR.number}. Will update it.`);
+    } else if (!branchCreated) {
       console.log(`Using existing branch: ${docsBranch}`);
+    } else {
+      console.log(`Created new branch: ${docsBranch}`);
     }
 
     // Generate documentation for each file
     console.log(`Starting documentation generation for ${filteredFiles.length} files...`);
 
     const generatedFiles = [];
+    const updatedFiles = [];
     const failedFiles = [];
 
     for (const file of filteredFiles) {
@@ -211,15 +201,22 @@ async function main() {
         const docsDir = `docs/${command.project}`;
         const docFilename = `${docsDir}/${basename}.adoc`;
 
-        // Check if documentation file already exists
+        // Check if documentation file already exists in the docs branch
         let existingDocContent = null;
         let isUpdate = false;
         try {
-          existingDocContent = await githubClient.getFileContent(docFilename, prDetails.base);
-          console.log(`Existing documentation found for ${file.filename}`);
+          existingDocContent = await githubClient.getFileContent(docFilename, docsBranch);
+          console.log(`Existing documentation found for ${file.filename} in docs branch`);
           isUpdate = true;
         } catch (error) {
-          console.log(`No existing documentation for ${file.filename}, creating new`);
+          // If not found in docs branch, check in base branch
+          try {
+            existingDocContent = await githubClient.getFileContent(docFilename, prDetails.base);
+            console.log(`Existing documentation found for ${file.filename} in base branch`);
+            isUpdate = true;
+          } catch (baseError) {
+            console.log(`No existing documentation for ${file.filename}, creating new`);
+          }
         }
 
         // Generate documentation
@@ -246,7 +243,11 @@ async function main() {
             `docs: ${isUpdate ? 'Update' : 'Generate'} documentation for ${basename} (PR #${prNumber})`
         );
 
-        generatedFiles.push(docFilename);
+        if (isUpdate) {
+          updatedFiles.push(docFilename);
+        } else {
+          generatedFiles.push(docFilename);
+        }
         console.log(`Documentation completed: ${docFilename}`);
 
       } catch (error) {
@@ -258,17 +259,45 @@ async function main() {
       }
     }
 
-    // Summary and PR creation
-    if (generatedFiles.length > 0) {
-      // Create PR only if it doesn't already exist
-      console.log('Creating documentation PR...');
+    // Summary and PR creation/update
+    const totalProcessedFiles = generatedFiles.length + updatedFiles.length;
 
-      const prBody = `# ${command.project} Documentation Generation
-      
+    if (totalProcessedFiles > 0) {
+      let prUrl;
+
+      if (existingPR) {
+        // Use existing PR
+        prUrl = existingPR.url;
+        console.log(`Updated existing documentation PR: ${prUrl}`);
+
+        // Add comment to existing PR about the update
+        await githubClient.createPRComment(
+            existingPR.number,
+            `📝 Documentation updated for PR #${prNumber} by @${payload.comment.user.login}
+            
+**Files processed in this update:**
+${generatedFiles.length > 0 ? `\n**New documentation:**\n${generatedFiles.map(file => `- ${file}`).join('\n')}` : ''}
+${updatedFiles.length > 0 ? `\n**Updated documentation:**\n${updatedFiles.map(file => `- ${file}`).join('\n')}` : ''}
+
+${failedFiles.length > 0 ? `\n**Failed files:**\n${failedFiles.map(f => `- ${f.filename}: ${f.reason}`).join('\n')}` : ''}
+
+Command: \`${commentBody}\``
+        );
+      } else {
+        // Create new PR
+        console.log('Creating new documentation PR...');
+
+        const prBody = `# ${command.project} Documentation Generation
+        
 Documentation was automatically generated for PR #${prNumber}.
 
 ## Generated Documentation Files
 ${generatedFiles.map(file => `- ${file}`).join('\n')}
+
+${updatedFiles.length > 0 ? `
+## Updated Documentation Files
+${updatedFiles.map(file => `- ${file}`).join('\n')}
+` : ''}
 
 ${failedFiles.length > 0 ? `
 ## Failed Files
@@ -277,40 +306,37 @@ ${failedFiles.map(f => `- ${f.filename}: ${f.reason}`).join('\n')}
 
 This documentation was automatically generated. Please review and modify the content if needed.`;
 
-      const prTitle = `docs: Generate documentation for ${command.project} (PR #${prNumber})`;
+        const prTitle = `docs: Generate documentation for ${command.project} (PR #${prNumber})`;
 
-      try {
-        const pr = await githubClient.createPR(
-            prTitle,
-            prBody,
-            docsBranch,
-            prDetails.base
-        );
-
-        // Comment on original PR
-        await githubClient.createPRComment(
-            prNumber,
-            `✅ @${payload.comment.user.login} Documentation generation completed.
-          
-Created documentation for ${generatedFiles.length} files in a new PR: ${pr.html_url}
-
-${failedFiles.length > 0 ? `⚠️ ${failedFiles.length} files failed to process.` : ''}`
-        );
-      } catch (error) {
-        if (error.message.includes('A pull request already exists')) {
-          // PR already exists
-          await githubClient.createPRComment(
-              prNumber,
-              `✅ @${payload.comment.user.login} Documentation generation completed.
-            
-Updated documentation for ${generatedFiles.length} files. A documentation PR already exists for this branch.
-
-${failedFiles.length > 0 ? `⚠️ ${failedFiles.length} files failed to process.` : ''}`
+        try {
+          const pr = await githubClient.createPR(
+              prTitle,
+              prBody,
+              docsBranch,
+              prDetails.base
           );
-        } else {
-          throw error;
+          prUrl = pr.html_url;
+        } catch (error) {
+          if (error.message.includes('A pull request already exists')) {
+            // This shouldn't happen with our new logic, but just in case
+            prUrl = 'existing PR (could not retrieve URL)';
+          } else {
+            throw error;
+          }
         }
       }
+
+      // Comment on original PR
+      await githubClient.createPRComment(
+          prNumber,
+          `✅ @${payload.comment.user.login} Documentation generation completed.
+        
+${existingPR ? 'Updated' : 'Created'} documentation for ${totalProcessedFiles} files: ${prUrl}
+
+${generatedFiles.length > 0 ? `**New:** ${generatedFiles.length} files` : ''}${updatedFiles.length > 0 ? `${generatedFiles.length > 0 ? ', ' : ''}**Updated:** ${updatedFiles.length} files` : ''}
+
+${failedFiles.length > 0 ? `⚠️ ${failedFiles.length} files failed to process.` : ''}`
+      );
 
     } else {
       // All files failed
