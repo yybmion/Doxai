@@ -417,18 +417,6 @@ This documentation was automatically generated. Please review and modify the con
 
       await githubClient.createPRComment(prNumber, summaryComment);
 
-      // Comment on original PR
-      await githubClient.createPRComment(
-          prNumber,
-          `✅ @${payload.comment.user.login} Documentation generation completed.
-        
-${existingPR ? 'Updated' : 'Created'} documentation for ${totalProcessedFiles} files: ${prUrl}
-
-${generatedFiles.length > 0 ? `**New:** ${generatedFiles.length} files` : ''}${updatedFiles.length > 0 ? `${generatedFiles.length > 0 ? ', ' : ''}**Updated:** ${updatedFiles.length} files` : ''}
-
-${failedFiles.length > 0 ? `⚠️ ${failedFiles.length} files failed to process.` : ''}`
-      );
-
     } else {
       // All files failed
       await githubClient.createPRComment(
@@ -460,6 +448,129 @@ Main error: ${failedFiles[0]?.reason || 'Unknown error'}`
       console.error('Failed to create error comment:', commentError);
     }
   }
+}
+
+/**
+ * Check if file type is suitable for documentation
+ * @param {string} filename - File name with extension
+ * @returns {boolean} - Whether the file should be documented
+ */
+function shouldDocumentFile(filename) {
+  const documentableExtensions = [
+    'js', 'jsx', 'ts', 'tsx',           // JavaScript/TypeScript
+    'py', 'pyw',                       // Python
+    'java', 'kt', 'scala',             // JVM 언어
+    'cs', 'vb',                        // .NET
+    'cpp', 'c', 'h', 'hpp',            // C/C++
+    'rs',                              // Rust
+    'go',                              // Go
+    'rb',                              // Ruby
+    'php',                             // PHP
+    'swift',                           // Swift
+    'dart',                            // Dart
+    'r',                               // R
+    'sql',                             // SQL
+
+    'sh', 'bash', 'zsh', 'fish',       // Shell
+    'ps1', 'psm1',                     // PowerShell
+    'bat', 'cmd',                      // Windows Batch
+
+    'html', 'htm',                     // HTML
+    'css', 'scss', 'sass', 'less',     // CSS
+    'vue', 'svelte',                   // 프레임워크
+
+    'json', 'yaml', 'yml',             // 구조화된 데이터
+    'toml', 'ini', 'conf',             // 설정
+    'xml',                             // XML
+    'dockerfile',                      // Docker
+
+    'md', 'rst', 'adoc', 'txt',        // 문서
+
+    'makefile', 'cmake',               // 빌드
+    'gradle', 'maven'                  // 빌드 도구
+  ];
+
+  const excludePatterns = [
+    'node_modules/', 'dist/', 'build/', '.next/', '.nuxt/',
+    'target/', 'bin/', 'obj/', '.git/', '.vscode/', '.idea/',
+
+    '.tmp', '.temp', '.cache', '.log',
+
+    '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico',
+    '.pdf', '.zip', '.tar', '.gz', '.rar',
+    '.exe', '.dll', '.so', '.dylib',
+
+    '.env', '.env.local', '.env.production',
+    'package-lock.json', 'yarn.lock', 'composer.lock'
+  ];
+
+  if (excludePatterns.some(pattern => filename.includes(pattern))) {
+    return false;
+  }
+
+  const extension = path.extname(filename).slice(1).toLowerCase();
+
+  const basename = path.basename(filename).toLowerCase();
+  const specialFiles = [
+    'dockerfile', 'makefile', 'rakefile', 'gemfile',
+    'podfile', 'vagrantfile', 'gruntfile', 'gulpfile'
+  ];
+
+  if (specialFiles.includes(basename)) {
+    return true;
+  }
+
+  return documentableExtensions.includes(extension);
+}
+
+function filterFilesByScope(files, scope) {
+  console.log('All files before filtering:', files.map(f => f.filename));
+
+  const documentableFiles = files.filter(file => {
+    const shouldDoc = shouldDocumentFile(file.filename);
+    if (!shouldDoc) {
+      console.log(`Skipping ${file.filename} - not a documentable file type`);
+    }
+    return shouldDoc;
+  });
+
+  console.log('Documentable files:', documentableFiles.map(f => f.filename));
+
+  if (scope === 'all') {
+    return documentableFiles;
+  }
+
+  if (scope.startsWith('include:')) {
+    const patterns = scope.substring(8).split(',');
+    console.log('Include patterns:', patterns);
+
+    const filtered = documentableFiles.filter(file => {
+      const basename = path.basename(file.filename);
+
+      return patterns.some(pattern =>
+          basename === pattern ||
+          basename.includes(pattern) ||
+          file.filename.includes(pattern)
+      );
+    });
+
+    console.log('Filtered files:', filtered.map(f => f.filename));
+    return filtered;
+  }
+
+  if (scope.startsWith('exclude:')) {
+    const patterns = scope.substring(8).split(',');
+    return documentableFiles.filter(file => {
+      const basename = path.basename(file.filename);
+      return !patterns.some(pattern =>
+          basename === pattern ||
+          basename.includes(pattern) ||
+          file.filename.includes(pattern)
+      );
+    });
+  }
+
+  return documentableFiles;
 }
 
 // Execute main function
