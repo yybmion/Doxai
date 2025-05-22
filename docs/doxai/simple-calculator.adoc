@@ -1,0 +1,143 @@
+= Calculator Class
+:toc:
+:source-highlighter: highlight.js
+
+== Overview
+
+The `Calculator` class is responsible for performing basic arithmetic operations (addition and subtraction). It maintains an internal value and provides methods to modify and retrieve it.  It acts as a simple utility class for calculations.
+
+[cols="1,3"]
+|===
+|PR Number|#2
+|Author|@{yybmion}
+|Created Date|2025-05-21
+|Last Modified|2025-05-22 by @{yybmion}
+|===
+
+== Detailed Description
+
+The `Calculator` class is designed for simple arithmetic calculations. It stores a numerical value internally and offers methods to add to, subtract from, retrieve, and reset this value. The methods are designed to support method chaining for concise code.  The class is straightforward and easy to use, making it suitable for scenarios where simple arithmetic operations are needed.  No complex error handling or edge cases are considered in this implementation.
+
+== Main Use Cases
+
+[source,javascript]
+----
+// Simple example code using this class
+const calc = new Calculator(5);
+const result = calc.add(3).subtract(1).getValue(); // result will be 7
+console.log(result);
+----
+
+== Dependencies
+
+* None
+
+== Key Methods
+
+=== add(num)
+
+[source,javascript]
+----
+this.value += num;
+return this;
+----
+
+*Purpose*: Adds the provided number (`num`) to the internal `value` of the calculator.
+
+*Parameters*:
+
+* `num` - {number} The number to be added.  No specific constraints are defined in the code.
+
+*Return Value*: {Calculator} Returns the `Calculator` instance itself, enabling method chaining.
+
+*Exceptions*:
+
+* None explicitly handled in the code.  Potentially, if `num` is not a number, it might lead to unexpected behavior.
+
+*Usage Example*:
+
+[source,javascript]
+----
+const calc = new Calculator(10);
+calc.add(5); // calc.value will be 15
+----
+
+=== subtract(num)
+
+[source,javascript]
+----
+this.value -= num;
+return this;
+----
+
+*Purpose*: Subtracts the provided number (`num`) from the internal `value` of the calculator.
+
+*Parameters*:
+
+* `num` - {number} The number to be subtracted. No specific constraints are defined in the code.
+
+*Return Value*: {Calculator} Returns the `Calculator` instance itself, enabling method chaining.
+
+*Exceptions*:
+
+* None explicitly handled in the code. Potentially, if `num` is not a number, it might lead to unexpected behavior.
+
+*Usage Example*:
+
+[source,javascript]
+----
+const calc = new Calculator(10);
+calc.subtract(3); // calc.value will be 7
+----
+
+=== getValue()
+
+*Purpose*: Returns the current value stored in the calculator.
+
+*Parameters*: None
+
+*Return Value*: {number} The current value of the calculator.
+
+*Exceptions*: None
+
+*Usage Example*:
+
+[source,javascript]
+----
+const calc = new Calculator(5);
+const currentValue = calc.getValue(); // currentValue will be 5
+----
+
+=== reset(value = 0)
+
+[source,javascript]
+----
+this.value = value;
+return this;
+----
+
+*Purpose*: Resets the calculator's internal value to the specified value (or 0 if no value is provided).
+
+*Parameters*:
+
+* `value` - {number} The value to reset the calculator to (defaults to 0).
+
+*Return Value*: {Calculator} Returns the `Calculator` instance itself, enabling method chaining.
+
+*Exceptions*:
+
+* None explicitly handled in the code.
+
+*Usage Example*:
+
+[source,javascript]
+----
+const calc = new Calculator(10);
+calc.reset(2); // calc.value will be 2
+----
+
+
+== Important Notes
+
+* The calculator only handles addition and subtraction.  More complex operations are not supported.
+* No input validation is performed; unexpected behavior might occur if non-numeric values are used.
