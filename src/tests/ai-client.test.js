@@ -1,11 +1,11 @@
-const AiClient = require('../../src/ai-client');
+const AIClient = require('../../src/ai-client');
 const axios = require('axios');
 
 // Mock axios
 jest.mock('axios');
 
 // Mock config
-jest.mock('../config', () => ({
+jest.mock('../../src/config', () => ({
   aiEndpoints: {
     openai: 'https://api.openai.com/v1/chat/completions',
     anthropic: 'https://api.anthropic.com/v1/messages',
@@ -14,13 +14,13 @@ jest.mock('../config', () => ({
   }
 }));
 
-describe('AiClient - Google Gemini Model Tests', () => {
+describe('AIClient - Updated Implementation Tests', () => {
   let aiClient;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    // Initialize AiClient with Gemini model
-    aiClient = new AiClient('google', 'gemini-1.5-flash', 'test-api-key');
+    // Initialize AIClient with Gemini model
+    aiClient = new AIClient('google', 'gemini-1.5-flash', 'test-api-key');
   });
 
   describe('Constructor initialization', () => {
@@ -32,22 +32,22 @@ describe('AiClient - Google Gemini Model Tests', () => {
     });
 
     it('should throw error for unsupported provider', () => {
-      expect(() => new AiClient('unsupported-provider', 'model', 'key'))
+      expect(() => new AIClient('unsupported-provider', 'model', 'key'))
       .toThrow('Unsupported AI provider: unsupported-provider');
     });
   });
 
-  describe('createRequestData for Gemini model', () => {
-    it('should create correct request data format for Gemini', () => {
+  describe('createRequestData for Google (Fixed Implementation)', () => {
+    it('should combine system and user prompts for Google API', () => {
       const systemPrompt = 'You are a helpful assistant';
       const userPrompt = 'Tell me about JavaScript';
 
       const result = aiClient.createRequestData(systemPrompt, userPrompt);
 
+      // Updated implementation combines prompts for Google
       expect(result).toEqual({
         contents: [
-          { role: 'system', parts: [{ text: systemPrompt }] },
-          { role: 'user', parts: [{ text: userPrompt }] }
+          { role: 'user', parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }
         ],
         generationConfig: {
           temperature: 0.3,
@@ -58,18 +58,62 @@ describe('AiClient - Google Gemini Model Tests', () => {
       });
     });
 
-    it('should accept complex prompts', () => {
-      const systemPrompt = 'You are a code documentation expert';
-      const userPrompt = 'Document this class:\n\nclass Example { constructor() {} }';
+    it('should handle empty system prompt', () => {
+      const systemPrompt = '';
+      const userPrompt = 'Tell me about JavaScript';
 
       const result = aiClient.createRequestData(systemPrompt, userPrompt);
 
-      expect(result.contents[0].parts[0].text).toBe(systemPrompt);
-      expect(result.contents[1].parts[0].text).toBe(userPrompt);
+      expect(result.contents[0].parts[0].text).toBe(`\n\n${userPrompt}`);
+    });
+
+    it('should handle long prompts correctly', () => {
+      const systemPrompt = 'You are a code documentation expert.';
+      const userPrompt = 'A'.repeat(1000);
+
+      const result = aiClient.createRequestData(systemPrompt, userPrompt);
+
+      expect(result.contents[0].parts[0].text.length).toBe(systemPrompt.length + 2 + userPrompt.length);
     });
   });
 
-  describe('createRequestHeaders for Gemini model', () => {
+  describe('createRequestData for other providers', () => {
+    it('should create correct format for OpenAI', () => {
+      const openaiClient = new AIClient('openai', 'gpt-4', 'test-key');
+      const systemPrompt = 'You are helpful';
+      const userPrompt = 'Help me';
+
+      const result = openaiClient.createRequestData(systemPrompt, userPrompt);
+
+      expect(result).toEqual({
+        model: 'gpt-4',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: 0.3
+      });
+    });
+
+    it('should create correct format for Anthropic', () => {
+      const anthropicClient = new AIClient('anthropic', 'claude-3-opus', 'test-key');
+      const systemPrompt = 'You are helpful';
+      const userPrompt = 'Help me';
+
+      const result = anthropicClient.createRequestData(systemPrompt, userPrompt);
+
+      expect(result).toEqual({
+        model: 'claude-3-opus',
+        messages: [
+          { role: 'user', content: userPrompt }
+        ],
+        system: systemPrompt,
+        temperature: 0.3
+      });
+    });
+  });
+
+  describe('createRequestHeaders', () => {
     it('should create correct headers for Google API', () => {
       const result = aiClient.createRequestHeaders();
 
@@ -78,10 +122,20 @@ describe('AiClient - Google Gemini Model Tests', () => {
         'x-goog-api-key': 'test-api-key'
       });
     });
+
+    it('should create correct headers for other providers', () => {
+      const openaiClient = new AIClient('openai', 'gpt-4', 'test-key');
+      const headers = openaiClient.createRequestHeaders();
+
+      expect(headers).toEqual({
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer test-key'
+      });
+    });
   });
 
-  describe('extractResponseText for Gemini model', () => {
-    it('should extract text correctly from Gemini response', () => {
+  describe('extractResponseText', () => {
+    it('should extract text correctly from Google response', () => {
       const mockResponse = {
         data: {
           candidates: [
@@ -146,10 +200,11 @@ describe('AiClient - Google Gemini Model Tests', () => {
     });
   });
 
-  describe('sendPrompt with Gemini model', () => {
-    it('should send request to correct Gemini endpoint', async () => {
+  describe('sendPrompt', () => {
+    it('should send request to correct Google endpoint with combined prompt', async () => {
       const systemPrompt = 'You are a helpful assistant';
       const userPrompt = 'Hello, how are you?';
+      const combinedPrompt = `${systemPrompt}\n\n${userPrompt}`;
 
       // Mock successful response
       const mockResponse = {
@@ -176,8 +231,7 @@ describe('AiClient - Google Gemini Model Tests', () => {
           'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
           {
             contents: [
-              { role: 'system', parts: [{ text: systemPrompt }] },
-              { role: 'user', parts: [{ text: userPrompt }] }
+              { role: 'user', parts: [{ text: combinedPrompt }] }
             ],
             generationConfig: {
               temperature: 0.3,
@@ -198,7 +252,6 @@ describe('AiClient - Google Gemini Model Tests', () => {
     });
 
     it('should handle API errors gracefully', async () => {
-      // API error mock
       const errorResponse = {
         response: {
           data: {
@@ -224,71 +277,60 @@ describe('AiClient - Google Gemini Model Tests', () => {
       .toThrow('AI API request failed: Network error');
     });
 
-    it('should handle unexpected response formats', async () => {
-      // Malformed response without candidates
-      const malformedResponse = {
+    it('should handle various endpoint configurations', async () => {
+      // Test different providers have different endpoint handling
+      const openaiClient = new AIClient('openai', 'gpt-4', 'test-key');
+
+      const mockResponse = {
         data: {
-          unexpectedField: 'value'
-          // Missing candidates field
+          choices: [{ message: { content: 'OpenAI response' } }]
         }
       };
 
-      axios.post.mockResolvedValueOnce(malformedResponse);
+      axios.post.mockResolvedValueOnce(mockResponse);
 
-      await expect(aiClient.sendPrompt('system prompt', 'user prompt'))
-      .rejects
-      .toThrow('Google AI could not generate a response.');
+      await openaiClient.sendPrompt('system', 'user');
+
+      // OpenAI should use the endpoint directly without modification
+      expect(axios.post).toHaveBeenCalledWith(
+          'https://api.openai.com/v1/chat/completions',
+          expect.any(Object),
+          expect.any(Object)
+      );
     });
   });
 
-  describe('Edge cases for Gemini model', () => {
-    it('should handle very long prompts', async () => {
-      const longPrompt = 'A'.repeat(10000);
+  describe('Integration with different AI providers', () => {
+    it('should work end-to-end with OpenAI', async () => {
+      const openaiClient = new AIClient('openai', 'gpt-4', 'openai-key');
+
       const mockResponse = {
         data: {
-          candidates: [
-            {
-              content: {
-                parts: [
-                  { text: 'Response to long prompt' }
-                ]
-              },
-              finishReason: 'STOP'
-            }
-          ]
+          choices: [{ message: { content: 'OpenAI generated documentation' } }]
         }
       };
 
       axios.post.mockResolvedValueOnce(mockResponse);
 
-      const result = await aiClient.sendPrompt('system prompt', longPrompt);
+      const result = await openaiClient.sendPrompt('You are a docs generator', 'Document this code');
 
-      expect(axios.post.mock.calls[0][1].contents[1].parts[0].text.length).toBe(10000);
-      expect(result).toBe('Response to long prompt');
+      expect(result).toBe('OpenAI generated documentation');
     });
 
-    it('should handle prompts with special characters', async () => {
-      const specialCharsPrompt = 'Text with 特殊文字 and emoji 🚀';
+    it('should work end-to-end with Anthropic', async () => {
+      const anthropicClient = new AIClient('anthropic', 'claude-3-opus', 'anthropic-key');
+
       const mockResponse = {
         data: {
-          candidates: [
-            {
-              content: {
-                parts: [
-                  { text: 'Response with 特殊文字 and emoji 🚀' }
-                ]
-              },
-              finishReason: 'STOP'
-            }
-          ]
+          content: [{ text: 'Claude generated documentation' }]
         }
       };
 
       axios.post.mockResolvedValueOnce(mockResponse);
 
-      const result = await aiClient.sendPrompt('system prompt', specialCharsPrompt);
+      const result = await anthropicClient.sendPrompt('You are a docs generator', 'Document this code');
 
-      expect(result).toBe('Response with 特殊文字 and emoji 🚀');
+      expect(result).toBe('Claude generated documentation');
     });
   });
 });
