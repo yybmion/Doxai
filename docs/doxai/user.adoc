@@ -1,0 +1,239 @@
+= UserManager
+:toc:
+:source-highlighter: highlight.js
+
+== Overview
+
+The `UserManager` is responsible for managing user accounts within an application. It provides methods for adding, retrieving, updating, removing, and querying users based on their ID and role.  It uses an in-memory `Map` to store user data.
+
+[cols="1,3"]
+|===
+|PR Number|#3
+|Author|@{yybmion}
+|Created Date|2025-05-21
+|Last Modified|2025-05-22 by @{yybmion}
+|===
+
+== Detailed Description
+
+The `UserManager` class utilizes a `Map` data structure to efficiently store and retrieve user information.  Each user is identified by a unique ID, and their data includes name, email, role (defaulting to 'user'), creation timestamp, and last login timestamp. The class offers methods to perform CRUD (Create, Read, Update, Delete) operations on users, as well as a method to retrieve users based on their role.  The internal data structure is not persistent; user data will be lost if the application restarts.
+
+The class is designed for simplicity and ease of use in scenarios where a persistent user database is not required.  It's suitable for applications with a small number of users or for testing purposes.  For production systems with a large number of users, a persistent database solution would be more appropriate.
+
+
+== Main Use Cases
+
+[source,javascript]
+----
+// Simple example code using this class
+const UserManager = require('./user.manager');
+const userManager = new UserManager();
+
+userManager.addUser('123', { name: 'John Doe', email: 'john.doe@example.com' });
+const user = userManager.getUser('123');
+console.log(user); // Output: User object with John Doe's data
+userManager.updateUser('123', { email: 'john.updated@example.com' });
+userManager.removeUser('123');
+----
+
+== Dependencies
+
+* `Map` -  A built-in JavaScript object used to store user data as key-value pairs.
+
+
+== Key Methods
+
+=== addUser(id, userData)
+
+[source,javascript]
+----
+addUser(id, userData) {
+    if (this.users.has(id)) {
+      return false;
+    }
+    if (!userData.role) {
+      userData.role = 'user';
+    }
+    this.users.set(id, { ...userData, createdAt: new Date(), lastLogin: null });
+    return true;
+}
+----
+
+*Purpose*: Adds a new user to the system.  Returns `true` on success, `false` if a user with the given ID already exists.
+
+*Parameters*:
+
+* `id` - `{string}` - Unique identifier for the user.
+* `userData` - `{Object}` - User information containing `name` ({string}), `email` ({string}), and an optional `role` ({string}, defaults to 'user').
+
+*Return Value*: `{boolean}` - `true` if the user was added successfully, `false` otherwise.
+
+*Exceptions*:  None explicitly handled in the code.  Potentially, issues could arise if `id` or `userData` are of unexpected types.
+
+*Usage Example*:
+
+[source,javascript]
+----
+const success = userManager.addUser('456', { name: 'Jane Doe', email: 'jane.doe@example.com', role: 'admin' });
+console.log(success); // Output: true
+----
+
+
+=== getUser(id)
+
+[source,javascript]
+----
+getUser(id) {
+    return this.users.has(id) ? this.users.get(id) : null;
+}
+----
+
+*Purpose*: Retrieves a user from the system by their ID.
+
+*Parameters*:
+
+* `id` - `{string}` - The ID of the user to retrieve.
+
+*Return Value*: `{Object|null}` - The user object if found, `null` otherwise.
+
+*Exceptions*: None.
+
+*Usage Example*:
+
+[source,javascript]
+----
+const user = userManager.getUser('456');
+console.log(user);
+----
+
+
+=== updateUser(id, updatedData)
+
+[source,javascript]
+----
+updateUser(id, updatedData) {
+    if (!this.users.has(id)) {
+      return false;
+    }
+    const user = this.users.get(id);
+    this.users.set(id, { ...user, ...updatedData, updatedAt: new Date() });
+    return true;
+}
+----
+
+*Purpose*: Updates an existing user's information.
+
+*Parameters*:
+
+* `id` - `{string}` - The ID of the user to update.
+* `updatedData` - `{Object}` -  An object containing the data to update.
+
+*Return Value*: `{boolean}` - `true` if the user was updated successfully, `false` if the user doesn't exist.
+
+*Exceptions*: None.
+
+*Usage Example*:
+
+[source,javascript]
+----
+const updated = userManager.updateUser('456', { email: 'jane.new@example.com' });
+console.log(updated); // Output: true
+----
+
+
+=== removeUser(id)
+
+[source,javascript]
+----
+removeUser(id) {
+    return this.users.delete(id);
+}
+----
+
+*Purpose*: Removes a user from the system.
+
+*Parameters*:
+
+* `id` - `{string}` - The ID of the user to remove.
+
+*Return Value*: `{boolean}` - `true` if the user was removed successfully, `false` if the user doesn't exist.
+
+*Exceptions*: None.
+
+*Usage Example*:
+
+[source,javascript]
+----
+const removed = userManager.removeUser('456');
+console.log(removed); // Output: true
+----
+
+=== recordLogin(id)
+
+[source,javascript]
+----
+recordLogin(id) {
+    if (!this.users.has(id)) {
+      return false;
+    }
+    const user = this.users.get(id);
+    user.lastLogin = new Date();
+    this.users.set(id, user);
+    return true;
+}
+----
+
+*Purpose*: Records a user login event, updating the `lastLogin` timestamp.
+
+*Parameters*:
+
+* `id` - `{string}` - The ID of the user who logged in.
+
+*Return Value*: `{boolean}` - `true` if the login was recorded, `false` if the user doesn't exist.
+
+*Exceptions*: None.
+
+*Usage Example*:
+
+[source,javascript]
+----
+userManager.recordLogin('123');
+----
+
+=== getUsersByRole(role)
+
+[source,javascript]
+----
+getUsersByRole(role) {
+    const result = [];
+    this.users.forEach(user => {
+      if (user.role === role) {
+        result.push(user);
+      }
+    });
+    return result;
+}
+----
+
+*Purpose*: Retrieves all users with a specific role.
+
+*Parameters*:
+
+* `role` - `{string}` - The role to filter by.
+
+*Return Value*: `{Array}` - An array of user objects with the specified role.
+
+*Exceptions*: None.
+
+*Usage Example*:
+
+[source,javascript]
+----
+const admins = userManager.getUsersByRole('admin');
+console.log(admins);
+----
+
+== Important Notes
+
+* The `UserManager` class stores user data in memory.  Data is not persistent across application restarts.
+* Error handling is minimal; more robust error handling might be needed in a production environment.  Input validation could be improved.
