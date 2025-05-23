@@ -1,0 +1,67 @@
+```asciidoc
+= src/tests/main.test.js - Unit Tests for Documentation Generation
+
+== PR Information
+
+* PR Number: 3
+* Author: yybmion
+* Created Date: 2025-05-21
+* Last Modified: 2025-05-23 by yybmion
+
+== Overview
+
+This file contains unit tests for the `src/main.js` module, which implements a GitHub Action for automatically generating documentation based on code changes in pull requests.  The tests extensively mock various dependencies, including GitHub and AI clients, to isolate and verify the core logic.  The tests cover parsing commands, filtering files, handling different scenarios (new vs. existing documentation PRs), error handling, and language support.
+
+== Dependencies
+
+* `path`: For path manipulation.
+* `@actions/core`: For GitHub Actions core functionalities (getInput, setOutput, etc.).  Mocked in the tests.
+* `@actions/github`: For interacting with the GitHub API. Mocked in the tests.
+* `../../src/github`:  A custom module for interacting with the GitHub API. Mocked in the tests.  Implementation details are unknown.
+* `../../src/ai-client`: A custom module for interacting with an AI service (e.g., Google Gemini, OpenAI). Mocked in the tests. Implementation details are unknown.
+* `../../src/config`: Contains configuration settings (API keys, model names, etc.). Mocked in the tests.
+* `fs`: For file system operations (access, writeFile, readFile, mkdir). Mocked in the tests.
+* `../../src/docs-prompt`: Contains templates and functions for generating prompts for the AI service. Mocked in the tests.
+
+== Mocked Modules and Objects
+
+The tests extensively use `jest.mock` to mock the behavior of various modules and objects.  This allows for isolated testing of the core logic without relying on external services or file systems.  The mocked objects include:
+
+* `@actions/core`
+* `@actions/github`
+* `../../src/github`
+* `../../src/ai-client`
+* `../../src/config`
+* `fs`
+* `../../src/docs-prompt`
+
+Mock implementations are provided for the `GitHubClient` and `AIClient` classes, along with their methods.
+
+== Tested Functions
+
+* `parseCommand(command)`: Parses the command string from a GitHub comment to extract project, scope, and language options.
+* `filterFilesByScope(files, scope)`: Filters a list of changed files based on the specified scope (include/exclude patterns).
+
+== Test Scenarios
+
+The tests cover a wide range of scenarios, including:
+
+* Correct parsing of command options (scope, language).
+* Handling of invalid commands.
+* File filtering with various scope options (include, exclude, all).
+* Handling of new and existing documentation PRs.
+* Smart file skipping (files with no source code changes).
+* Handling of empty file lists.
+* Graceful handling of file processing errors.
+* Handling of catastrophic errors.
+* Handling of AI API failures.
+* Support for different languages.
+
+== Unclear Aspects
+
+The implementation details of `../../src/github`, `../../src/ai-client`, and the `shouldDocumentFile` function (if implemented) are unknown and therefore cannot be documented fully.  The tests provide some insight into their expected behavior, but the internal workings remain unclear.  The `hasSourceFileChanged` function (from `../../src/main`) is also not fully documented here.
+
+== Placeholder for `shouldDocumentFile` Function
+
+The tests include a placeholder for a `shouldDocumentFile` function, which is presumably responsible for filtering files based on their type.  This function is not implemented in the provided code, but the test suite suggests its intended purpose.  Further information is needed to fully document this function.
+```
