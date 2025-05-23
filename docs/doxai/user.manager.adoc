@@ -1,0 +1,86 @@
+```asciidoc
+= UserManager Class Documentation
+
+== PR Information
+
+* PR Number: 3
+* Author: yybmion
+* Created Date: 2025-05-21
+* Last Modified: 2025-05-23 by yybmion
+
+== File Information
+
+* Filename: examples/javascript/user.manager.js
+* Language: JavaScript
+
+== Overview
+
+The `UserManager` class provides a simple mechanism for managing user accounts.  It utilizes a `Map` to store user data, offering methods for adding, retrieving, updating, removing, and querying users based on their ID and role.  The class does not handle persistence; user data is lost when the application terminates.
+
+== Class: UserManager
+
+=== Constructor: `constructor()`
+
+Creates a new `UserManager` instance. Initializes an internal `Map` called `users` to store user data.  No parameters are required.
+
+=== Method: `addUser(id, userData)`
+
+Adds a new user to the system.
+
+* **Parameters:**
+    * `id` (string): A unique identifier for the user.
+    * `userData` (object): An object containing user information.  Requires `name` (string) and `email` (string) properties.  Optionally includes `role` (string, defaults to 'user').
+* **Returns:** (boolean) `true` if the user was added successfully, `false` if a user with the given ID already exists.
+* **Throws:**  No exceptions are explicitly thrown, but behavior is undefined if `id` or required fields in `userData` are invalid.
+
+=== Method: `getUser(id)`
+
+Retrieves a user by their ID.
+
+* **Parameters:**
+    * `id` (string): The user ID to look up.
+* **Returns:** (object|null) The user object if found, `null` otherwise.
+
+=== Method: `updateUser(id, updatedData)`
+
+Updates an existing user's information.
+
+* **Parameters:**
+    * `id` (string): The user ID to update.
+    * `updatedData` (object): An object containing the data to update.
+* **Returns:** (boolean) `true` if the user was updated successfully, `false` if the user does not exist.
+* **Throws:** No exceptions are explicitly thrown.  Behavior is undefined if `id` is invalid.
+
+=== Method: `removeUser(id)`
+
+Removes a user from the system.
+
+* **Parameters:**
+    * `id` (string): The user ID to remove.
+* **Returns:** (boolean) `true` if the user was removed successfully, `false` if the user does not exist.
+
+=== Method: `recordLogin(id)`
+
+Records a user login event. Updates the `lastLogin` property of the user object.
+
+* **Parameters:**
+    * `id` (string): The user ID.
+* **Returns:** (boolean) `true` if the login was recorded, `false` if the user does not exist.
+
+=== Method: `getUsersByRole(role)`
+
+Gets all users with a specific role.
+
+* **Parameters:**
+    * `role` (string): The role to filter by.
+* **Returns:** (array) An array of user objects with the specified role.
+
+
+== Dependencies
+
+The `UserManager` class has no external dependencies beyond the built-in JavaScript `Map` object.
+
+== Assumptions and Unclear Points
+
+There are no explicit error handling mechanisms (e.g., try-catch blocks) for invalid input. The behavior of the methods with invalid input is undefined and should be clarified.  The internal data structure is a simple in-memory `Map`; no persistence mechanism is implemented.
+```
