@@ -63,10 +63,9 @@ class DocsPromptGenerator {
    */
   createDocsPrompt(filename, fileContent, prDetails, language = 'en') {
     const codeLanguage = this.getLanguageFromFilename(filename);
-    const template = this.getTemplate(language, 'create');
+    const template = this.getTemplate(language, 'create', codeLanguage);
 
     return template
-    .replace(/\${codeLanguage}/g, codeLanguage)
     .replace(/\${prNumber}/g, prDetails.number)
     .replace(/\${author}/g, prDetails.author)
     .replace(/\${createdDate}/g, this.formatDate(prDetails.createdAt))
@@ -87,10 +86,9 @@ class DocsPromptGenerator {
    */
   createUpdateDocsPrompt(filename, fileContent, existingDocContent, prDetails, language = 'en') {
     const codeLanguage = this.getLanguageFromFilename(filename);
-    const template = this.getTemplate(language, 'update');
+    const template = this.getTemplate(language, 'update', codeLanguage);
 
     return template
-    .replace(/\${codeLanguage}/g, codeLanguage)
     .replace(/\${prNumber}/g, prDetails.number)
     .replace(/\${author}/g, prDetails.author)
     .replace(/\${createdDate}/g, this.formatDate(prDetails.createdAt))
@@ -105,9 +103,10 @@ class DocsPromptGenerator {
    * Get template based on language and type
    * @param {string} language - Language (ko/en)
    * @param {string} type - Template type (create/update)
+   * @param {string} codeLanguage - Programming language name
    * @returns {string} - Template string
    */
-  getTemplate(language, type) {
+  getTemplate(language, type, codeLanguage) {
     const templates = {
       ko: {
         create: `# 코드 문서화 요청
@@ -115,18 +114,18 @@ class DocsPromptGenerator {
 다음 ${codeLanguage} 파일을 분석하여 한국어로 AsciiDoc 형식의 기술 문서를 생성해주세요.
 
 ## PR 정보
-- PR 번호: ${prNumber}
-- 작성자: ${author}
-- 작성일: ${createdDate}
-- 마지막 수정: ${updatedDate} by ${updatedBy}
+- PR 번호: \${prNumber}
+- 작성자: \${author}
+- 작성일: \${createdDate}
+- 마지막 수정: \${updatedDate} by \${updatedBy}
 
 ## 파일 정보
-- 파일명: ${filename}
+- 파일명: \${filename}
 - 언어: ${codeLanguage}
 
 ## 코드
-\`\`\`${codeLanguage}
-${fileContent}
+\`\`\`${codeLanguage.toLowerCase()}
+\${fileContent}
 \`\`\`
 
 ## 요청사항
@@ -142,23 +141,23 @@ ${fileContent}
 다음 ${codeLanguage} 파일이 변경되었습니다. 기존 문서를 업데이트해주세요.
 
 ## PR 정보
-- PR 번호: ${prNumber}
-- 작성자: ${author}
-- 작성일: ${createdDate}
-- 마지막 수정: ${updatedDate} by ${updatedBy}
+- PR 번호: \${prNumber}
+- 작성자: \${author}
+- 작성일: \${createdDate}
+- 마지막 수정: \${updatedDate} by \${updatedBy}
 
 ## 파일 정보
-- 파일명: ${filename}
+- 파일명: \${filename}
 - 언어: ${codeLanguage}
 
 ## 현재 코드
-\`\`\`${codeLanguage}
-${fileContent}
+\`\`\`${codeLanguage.toLowerCase()}
+\${fileContent}
 \`\`\`
 
 ## 기존 문서
 \`\`\`asciidoc
-${existingDocContent}
+\${existingDocContent}
 \`\`\`
 
 ## 요청사항
@@ -175,18 +174,18 @@ ${existingDocContent}
 Please analyze the following ${codeLanguage} file and generate technical documentation in AsciiDoc format.
 
 ## PR Information
-- PR Number: ${prNumber}
-- Author: ${author}
-- Created Date: ${createdDate}
-- Last Modified: ${updatedDate} by ${updatedBy}
+- PR Number: \${prNumber}
+- Author: \${author}
+- Created Date: \${createdDate}
+- Last Modified: \${updatedDate} by \${updatedBy}
 
 ## File Information
-- Filename: ${filename}
+- Filename: \${filename}
 - Language: ${codeLanguage}
 
 ## Code
-\`\`\`${codeLanguage}
-${fileContent}
+\`\`\`${codeLanguage.toLowerCase()}
+\${fileContent}
 \`\`\`
 
 ## Requirements
@@ -202,23 +201,23 @@ ${fileContent}
 The following ${codeLanguage} file has been modified. Please update the existing documentation.
 
 ## PR Information
-- PR Number: ${prNumber}
-- Author: ${author}
-- Created Date: ${createdDate}
-- Last Modified: ${updatedDate} by ${updatedBy}
+- PR Number: \${prNumber}
+- Author: \${author}
+- Created Date: \${createdDate}
+- Last Modified: \${updatedDate} by \${updatedBy}
 
 ## File Information
-- Filename: ${filename}
+- Filename: \${filename}
 - Language: ${codeLanguage}
 
 ## Current Code
-\`\`\`${codeLanguage}
-${fileContent}
+\`\`\`${codeLanguage.toLowerCase()}
+\${fileContent}
 \`\`\`
 
 ## Existing Documentation
 \`\`\`asciidoc
-${existingDocContent}
+\${existingDocContent}
 \`\`\`
 
 ## Requirements
