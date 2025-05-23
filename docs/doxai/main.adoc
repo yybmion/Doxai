@@ -1,0 +1,129 @@
+```asciidoc
+= PR Documentation Generator - `src/main.js`
+
+== Overview
+
+This JavaScript file implements a GitHub Action that automatically generates documentation for code changes in a pull request (PR).  It parses PR comments for specific commands, retrieves changed files, and uses an AI client to generate AsciiDoc documentation. The generated documentation is then committed to a dedicated branch and a new PR is created or an existing one is updated.
+
+== Dependencies
+
+* `path`: Node.js core module for working with file paths.
+* `@actions/core`: GitHub Actions core library for interacting with the GitHub Actions runtime.
+* `@actions/github`: GitHub Actions library for interacting with the GitHub API.
+* `./github`: Custom module (not provided) for interacting with the GitHub API.  _Functionality unclear without access to this module._
+* `./ai-client`: Custom module (not provided) for interacting with an AI service (e.g., OpenAI). _Functionality unclear without access to this module._
+* `./docs-prompt`: Custom module (not provided) containing prompt templates and functions for creating prompts for the AI client. _Functionality unclear without access to this module._
+* `./config`: Custom module (not provided) containing configuration settings, including the default language (`config.language`). _Functionality unclear without access to this module._
+* `fs.promises`: Node.js core module for asynchronous file system operations.
+
+
+== Methods
+
+=== `parseCommand(commentBody)`
+
+[source,javascript]
+----
+/**
+ * Parse PR comment to extract command and options
+ * @param {string} commentBody - PR comment content
+ * @returns {object|null} - Parsing result or null
+ */
+function parseCommand(commentBody) {
+  // ... (Implementation details) ...
+}
+----
+
+Parses a PR comment to extract a documentation generation command and its options.  The command must start with `!doxai` followed by optional `--scope` and `--lang` parameters.  Returns an object containing the parsed command and options, or `null` if the comment doesn't match the expected format.
+
+=== `shouldDocumentFile(filename)`
+
+[source,javascript]
+----
+/**
+ * Check if file type is suitable for documentation
+ * @param {string} filename - File name with extension
+ * @returns {boolean} - Whether the file should be documented
+ */
+function shouldDocumentFile(filename) {
+  // ... (Implementation details) ...
+}
+----
+
+Checks if a file should be included in the documentation generation process based on its file extension and whether it matches any exclusion patterns.  The function maintains a list of supported file extensions and exclusion patterns.
+
+=== `filterFilesByScope(files, scope)`
+
+[source,javascript]
+----
+/**
+ * Filter files based on scope (with smart file type filtering)
+ * @param {Array} files - File list
+ * @param {string} scope - Scope option
+ * @returns {Array} - Filtered file list
+ */
+function filterFilesByScope(files, scope) {
+  // ... (Implementation details) ...
+}
+----
+
+Filters a list of files based on the specified `scope` option.  Supports `all`, `include:pattern1,pattern2,...`, and `exclude:pattern1,pattern2,...` scopes.  Also filters out non-documentable file types as defined in `shouldDocumentFile`.
+
+=== `hasSourceFileChanged(githubClient, sourceFilename, docFilename, docsBranch, sourceBranch)`
+
+[source,javascript]
+----
+/**
+ * Check if source file has changed since last documentation generation
+ * @param {object} githubClient - GitHub client instance
+ * @param {string} sourceFilename - Source file name
+ * @param {string} docFilename - Documentation file name
+ * @param {string} docsBranch - Documentation branch
+ * @param {string} sourceBranch - Source branch (head of PR)
+ * @returns {Promise<boolean>} - Whether the source file has changed
+ */
+async function hasSourceFileChanged(githubClient, sourceFilename, docFilename, docsBranch, sourceBranch) {
+  // ... (Implementation details) ...
+}
+----
+
+Checks if a source file has been modified since the last documentation generation by comparing the commit timestamps of the source and documentation files.  Returns a promise resolving to a boolean indicating whether the source file has changed.  Handles potential errors gracefully.
+
+=== `main()`
+
+[source,javascript]
+----
+/**
+ * Main function
+ */
+async function main() {
+  // ... (Implementation details) ...
+}
+----
+
+The main function orchestrates the entire documentation generation process.  It handles event processing, command parsing, file filtering, documentation generation using the AI client, and PR creation/update.  Includes comprehensive error handling and logging.
+
+
+==  Unclear Aspects
+
+The functionality of the following modules is unclear without access to their source code:
+
+* `./github`:  The implementation details of GitHub API interaction are unknown.
+* `./ai-client`: The specifics of the AI service interaction (API calls, prompt formatting, etc.) are unknown.
+* `./docs-prompt`: The structure and content of the prompt templates are unknown.
+* `./config`: The configuration options and their defaults are unknown.
+
+
+== Error Handling
+
+The code includes comprehensive error handling throughout the `main` function and other methods, logging errors to the console and using `core.setFailed` to indicate failure in the GitHub Actions context.  It also attempts to leave informative error messages in the PR comments.
+
+==  Future Improvements (Suggestions)
+
+* Add more robust input validation to prevent unexpected behavior.
+* Implement more sophisticated error handling and reporting.
+* Consider adding support for more programming languages and file types.
+* Improve the AI prompt engineering for better documentation quality.
+* Add unit tests for better code maintainability and reliability.
+
+
+```
