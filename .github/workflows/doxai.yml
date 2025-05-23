@@ -1,4 +1,4 @@
-name: CodeScribe Documentation Generator
+name: AutoDoc PR
 on:
   issue_comment:
     types: [created]
