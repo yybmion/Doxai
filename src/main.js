@@ -1,544 +1,550 @@
 const path = require('path');
 const core = require('@actions/core');
 const github = require('@actions/github');
+
+// Import utilities
 const GitHubClient = require('./github');
 const AIClient = require('./ai-client');
-const { docsPromptTemplates, createDocsPrompt, createUpdateDocsPrompt } = require('./docs-prompt');
+const CommandParser = require('./command-parser');
+const FileFilter = require('./file-filter');
+const Logger = require('./logger');
+const { createDocsPrompt, createUpdateDocsPrompt } = require('./docs-prompt');
 const config = require('./config');
-const fs = require('fs').promises;
 
 /**
- * Parse PR comment to extract command and options
- * @param {string} commentBody - PR comment content
- * @returns {object|null} - Parsing result or null
+ * Documentation Generator Action
  */
-function parseCommand(commentBody) {
-  const commandRegex = /!([a-zA-Z0-9_-]+)(.*)/;
-  const match = commentBody.match(commandRegex);
-
-  if (!match) {
-    return null;
+class DocumentationGenerator {
+  constructor() {
+    this.logger = new Logger('DocumentationGenerator');
+    this.commandParser = new CommandParser();
+    this.fileFilter = new FileFilter();
+    this.githubClient = null;
+    this.aiClient = null;
   }
 
-  const project = match[1];
-  const options = match[2].trim();
+  /**
+   * Main entry point
+   */
+  async run() {
+    try {
+      this.logger.info('Starting PR Documentation Generator');
 
-  if (project !== 'doxai') {
-    return null;
-  }
+      // Validate environment
+      const validation = this.validateEnvironment();
+      if (!validation.isValid) {
+        this.logger.info(validation.message);
+        return;
+      }
 
-  // Set default values
-  const result = {
-    project,
-    scope: 'all',
-    lang: config.language
-  };
+      // Parse command
+      const command = this.parseCommand(validation.payload);
+      if (!command) {
+        return;
+      }
 
-  // Parse scope option
-  const scopeRegex = /--scope\s+(all|include:[^-\s]+|exclude:[^-\s]+)/;
-  const scopeMatch = options.match(scopeRegex);
-  if (scopeMatch) {
-    result.scope = scopeMatch[1];
-  }
+      // Initialize clients
+      await this.initializeClients();
 
-  // Parse language option
-  const langRegex = /--lang\s+([a-zA-Z-]+)/;
-  const langMatch = options.match(langRegex);
-  if (langMatch) {
-    result.lang = langMatch[1];
-  }
+      // Process PR
+      await this.processPR(validation.payload, command);
 
-  return result;
-}
+      this.logger.info('Documentation Generator completed successfully');
 
-/**
- * Check if file type is suitable for documentation
- * @param {string} filename - File name with extension
- * @returns {boolean} - Whether the file should be documented
- */
-function shouldDocumentFile(filename) {
-  const documentableExtensions = [
-    'js', 'jsx', 'ts', 'tsx',           // JavaScript/TypeScript
-    'py', 'pyw',                       // Python
-    'java', 'kt', 'scala',             // JVM 언어
-    'cs', 'vb',                        // .NET
-    'cpp', 'c', 'h', 'hpp',            // C/C++
-    'rs',                              // Rust
-    'go',                              // Go
-    'rb',                              // Ruby
-    'php',                             // PHP
-    'swift',                           // Swift
-    'dart',                            // Dart
-    'r',                               // R
-    'sql',                             // SQL
+    } catch (error) {
+      this.logger.error('Documentation generation failed', error);
+      core.setFailed(`Documentation generation failed: ${error.message}`);
 
-    'sh', 'bash', 'zsh', 'fish',       // Shell
-    'ps1', 'psm1',                     // PowerShell
-    'bat', 'cmd',                      // Windows Batch
-
-    'html', 'htm',
-    'css', 'scss', 'sass', 'less',
-    'vue', 'svelte',
-
-    'json', 'yaml', 'yml',
-    'toml', 'ini', 'conf',
-    'xml',
-    'dockerfile',
-
-    'md', 'rst', 'adoc', 'txt',
-
-    'makefile', 'cmake',
-    'gradle', 'maven'
-  ];
-
-  const excludePatterns = [
-    'node_modules/', 'dist/', 'build/', '.next/', '.nuxt/',
-    'target/', 'bin/', 'obj/', '.git/', '.vscode/', '.idea/',
-
-    '.tmp', '.temp', '.cache', '.log',
-
-    '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico',
-    '.pdf', '.zip', '.tar', '.gz', '.rar',
-    '.exe', '.dll', '.so', '.dylib',
-
-    '.env', '.env.local', '.env.production',
-    'package-lock.json', 'yarn.lock', 'composer.lock'
-  ];
-
-  if (excludePatterns.some(pattern => filename.includes(pattern))) {
-    return false;
-  }
-
-  const extension = path.extname(filename).slice(1).toLowerCase();
-
-  const basename = path.basename(filename).toLowerCase();
-  const specialFiles = [
-    'dockerfile', 'makefile', 'rakefile', 'gemfile',
-    'podfile', 'vagrantfile', 'gruntfile', 'gulpfile'
-  ];
-
-  if (specialFiles.includes(basename)) {
-    return true;
-  }
-
-  return documentableExtensions.includes(extension);
-}
-
-/**
- * Filter files based on scope (with smart file type filtering)
- * @param {Array} files - File list
- * @param {string} scope - Scope option
- * @returns {Array} - Filtered file list
- */
-function filterFilesByScope(files, scope) {
-  console.log('All files before filtering:', files.map(f => f.filename));
-
-  // First filter by documentable file types
-  const documentableFiles = files.filter(file => {
-    const shouldDoc = shouldDocumentFile(file.filename);
-    if (!shouldDoc) {
-      console.log(`Skipping ${file.filename} - not a documentable file type`);
+      // Try to leave error comment
+      await this.postErrorComment(error.message);
     }
-    return shouldDoc;
-  });
-
-  console.log('Documentable files:', documentableFiles.map(f => f.filename));
-
-  if (scope === 'all') {
-    return documentableFiles;
   }
 
-  if (scope.startsWith('include:')) {
-    const patterns = scope.substring(8).split(',');
-    console.log('Include patterns:', patterns);
-
-    const filtered = documentableFiles.filter(file => {
-      const basename = path.basename(file.filename);
-
-      return patterns.some(pattern =>
-          basename === pattern ||
-          basename.includes(pattern) ||
-          file.filename.includes(pattern)
-      );
-    });
-
-    console.log('Filtered files:', filtered.map(f => f.filename));
-    return filtered;
-  }
-
-  if (scope.startsWith('exclude:')) {
-    const patterns = scope.substring(8).split(',');
-    return documentableFiles.filter(file => {
-      const basename = path.basename(file.filename);
-      return !patterns.some(pattern =>
-          basename === pattern ||
-          basename.includes(pattern) ||
-          file.filename.includes(pattern)
-      );
-    });
-  }
-
-  return documentableFiles;
-}
-
-/**
- * Check if source file has changed since last documentation generation
- * @param {object} githubClient - GitHub client instance
- * @param {string} sourceFilename - Source file name
- * @param {string} docFilename - Documentation file name
- * @param {string} docsBranch - Documentation branch
- * @param {string} sourceBranch - Source branch (head of PR)
- * @returns {Promise<boolean>} - Whether the source file has changed
- */
-async function hasSourceFileChanged(githubClient, sourceFilename, docFilename, docsBranch, sourceBranch) {
-  try {
-    const { data: commits } = await githubClient.octokit.rest.repos.listCommits({
-      ...githubClient.context,
-      path: docFilename,
-      sha: docsBranch,
-      per_page: 1
-    });
-
-    if (commits.length === 0) {
-      return true;
-    }
-
-    const lastDocCommitDate = new Date(commits[0].commit.committer.date);
-
-    const { data: sourceCommits } = await githubClient.octokit.rest.repos.listCommits({
-      ...githubClient.context,
-      path: sourceFilename,
-      sha: sourceBranch,
-      per_page: 1
-    });
-
-    if (sourceCommits.length === 0) {
-      return false;
-    }
-
-    const lastSourceCommitDate = new Date(sourceCommits[0].commit.committer.date);
-
-    return lastSourceCommitDate > lastDocCommitDate;
-
-  } catch (error) {
-    console.log(`Could not check file change status for ${sourceFilename}, assuming changed`);
-    return true;
-  }
-}
-
-/**
- * Main function
- */
-async function main() {
-  try {
-    console.log('PR Documentation Generator starting...');
-
-    // GitHub event context
+  /**
+   * Validate environment and GitHub event
+   * @returns {object} - Validation result
+   */
+  validateEnvironment() {
     const eventName = process.env.GITHUB_EVENT_NAME;
     const payload = github.context.payload;
 
-    // Check event type
-    if (eventName !== 'issue_comment' || !payload.issue?.pull_request) {
-      console.log('This event is not a PR comment.');
-      return;
+    if (eventName !== 'issue_comment') {
+      return {
+        isValid: false,
+        message: 'This action only runs on issue_comment events'
+      };
     }
 
-    // Check comment content
+    if (!payload.issue?.pull_request) {
+      return {
+        isValid: false,
+        message: 'This comment is not on a pull request'
+      };
+    }
+
+    return {
+      isValid: true,
+      payload
+    };
+  }
+
+  /**
+   * Parse and validate command
+   * @param {object} payload - GitHub event payload
+   * @returns {object|null} - Parsed command or null
+   */
+  parseCommand(payload) {
     const commentBody = payload.comment.body;
-    const command = parseCommand(commentBody);
+    const parsedCommand = this.commandParser.parse(commentBody);
 
-    if (!command) {
-      console.log('Not a documentation generation command.');
-      return;
+    if (!parsedCommand) {
+      this.logger.debug('No valid command found in comment');
+      return null;
     }
 
-    console.log('Documentation command detected:', JSON.stringify(command));
+    if (!parsedCommand.valid) {
+      this.logger.warn('Invalid command', parsedCommand.errors);
+      this.postErrorComment(
+          `Invalid command. Errors:\n${parsedCommand.errors.map(e => `- ${e}`).join('\n')}\n\n` +
+          this.commandParser.getHelp(parsedCommand.command)
+      );
+      return null;
+    }
 
-    // Initialize GitHub client
-    const githubClient = new GitHubClient();
+    this.logger.info('Command detected', parsedCommand);
+    return parsedCommand;
+  }
 
-    // Extract PR number
+  /**
+   * Initialize GitHub and AI clients
+   */
+  async initializeClients() {
+    try {
+      this.githubClient = new GitHubClient();
+      this.aiClient = new AIClient();
+      this.logger.info('Clients initialized successfully');
+    } catch (error) {
+      this.logger.error('Failed to initialize clients', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Process PR for documentation
+   * @param {object} payload - GitHub event payload
+   * @param {object} command - Parsed command
+   */
+  async processPR(payload, command) {
     const prNumber = payload.issue.number;
+    const username = payload.comment.user.login;
 
-    // Check PR status
-    const prDetails = await githubClient.getPRDetails(prNumber);
+    // Get PR details
+    const prDetails = await this.githubClient.getPRDetails(prNumber);
 
+    // Check if PR is merged
     if (!prDetails.merged) {
-      console.log('PR is not merged. Leaving error message and exiting.');
-      await githubClient.createPRComment(
+      await this.githubClient.createComment(
           prNumber,
-          `⚠️ @${payload.comment.user.login} Documentation generation is only possible on merged PRs. Please merge the PR and try again.`
+          `⚠️ @${username} Documentation generation is only available for merged PRs. ` +
+          `Please merge PR #${prNumber} first.`
       );
       return;
     }
 
-    // Get list of changed files
-    console.log('Getting list of changed files...');
-    const changedFiles = await githubClient.getChangedFiles(prNumber);
-
-    // Filter files based on scope
-    const filteredFiles = filterFilesByScope(changedFiles, command.scope);
+    // Get and filter changed files
+    const changedFiles = await this.githubClient.getChangedFiles(prNumber);
+    const filteredFiles = this.fileFilter.filterByScope(changedFiles, command.options.scope);
 
     if (filteredFiles.length === 0) {
-      console.log('No files to process.');
-      await githubClient.createPRComment(
+      await this.githubClient.createComment(
           prNumber,
-          `ℹ️ @${payload.comment.user.login} No files to document. Please check your scope option.`
+          `ℹ️ @${username} No files to document based on the specified scope.\n` +
+          `Total files in PR: ${changedFiles.length}\n` +
+          `Scope: \`${command.options.scope}\``
       );
       return;
     }
 
-    // Initialize AI client
-    const aiClient = new AIClient();
+    // Show filter statistics
+    const filterStats = this.fileFilter.getFilterStats(changedFiles, filteredFiles);
+    this.logger.info('File filter statistics', filterStats);
 
-    // Documentation branch name base
-    const docsBranchBase = `docs/${command.project}-pr-${prNumber}`;
+    // Process documentation
+    await this.processDocumentation(prDetails, filteredFiles, command, username);
+  }
 
-    // Create or get existing documentation branch
-    console.log(`Checking for existing documentation branch for PR #${prNumber}...`);
-    const { branchName: docsBranch, created: branchCreated, existingPR } =
-        await githubClient.createOrGetDocsBranch(prDetails.base, docsBranchBase, prNumber, command.project);
+  /**
+   * Process documentation generation
+   * @param {object} prDetails - PR details
+   * @param {Array} files - Files to document
+   * @param {object} command - Command details
+   * @param {string} username - User who triggered the action
+   */
+  async processDocumentation(prDetails, files, command, username) {
+    const prNumber = prDetails.number;
+
+    // Setup documentation branch
+    const docsBranchBase = `docs/${command.command}-pr-${prNumber}`;
+    const { branchName: docsBranch, existingPR } = await this.githubClient.createOrGetDocsBranch(
+        prDetails.base,
+        docsBranchBase,
+        prNumber,
+        command.command
+    );
+
+    // Process files
+    const results = {
+      generated: [],
+      updated: [],
+      skipped: [],
+      failed: []
+    };
+
+    // Post initial status
+    await this.githubClient.createComment(
+        prNumber,
+        `🔄 @${username} Starting documentation generation for ${files.length} files...`
+    );
+
+    // Process each file
+    for (const file of files) {
+      await this.processFile(file, prDetails, docsBranch, command, results);
+    }
+
+    // Create or update PR
+    await this.createOrUpdateDocsPR(prDetails, docsBranch, existingPR, results, command, username);
+  }
+
+  /**
+   * Process a single file for documentation
+   * @param {object} file - File to process
+   * @param {object} prDetails - PR details
+   * @param {string} docsBranch - Documentation branch
+   * @param {object} command - Command details
+   * @param {object} results - Results accumulator
+   */
+  async processFile(file, prDetails, docsBranch, command, results) {
+    try {
+      this.logger.info(`Processing file: ${file.filename}`);
+
+      // Get file content
+      const content = await this.githubClient.getFileContent(file.filename, prDetails.head);
+
+      // Generate documentation path
+      const basename = path.basename(file.filename, path.extname(file.filename));
+      const docsDir = `docs/${command.command}`;
+      const docFilename = `${docsDir}/${basename}.adoc`;
+
+      // Check for existing documentation
+      const { exists, content: existingDoc, hasChanged } = await this.checkExistingDoc(
+          file.filename,
+          docFilename,
+          docsBranch,
+          prDetails
+      );
+
+      if (exists && !hasChanged) {
+        this.logger.info(`Skipping ${file.filename} - no changes since last documentation`);
+        results.skipped.push({
+          source: file.filename,
+          doc: docFilename,
+          reason: 'Source unchanged'
+        });
+        return;
+      }
+
+      // Generate documentation
+      const docContent = await this.generateDocumentation(
+          file.filename,
+          content,
+          existingDoc,
+          prDetails,
+          command.options.lang
+      );
+
+      // Commit documentation
+      await this.githubClient.commitFile(
+          docsBranch,
+          docFilename,
+          docContent,
+          `docs: ${exists ? 'Update' : 'Generate'} documentation for ${basename} (PR #${prDetails.number})`
+      );
+
+      // Update results
+      if (exists) {
+        results.updated.push(docFilename);
+      } else {
+        results.generated.push(docFilename);
+      }
+
+    } catch (error) {
+      this.logger.error(`Failed to process file: ${file.filename}`, error);
+      results.failed.push({
+        filename: file.filename,
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * Check for existing documentation
+   * @param {string} sourceFile - Source file path
+   * @param {string} docFile - Documentation file path
+   * @param {string} docsBranch - Documentation branch
+   * @param {object} prDetails - PR details
+   * @returns {object} - Existing doc info
+   */
+  async checkExistingDoc(sourceFile, docFile, docsBranch, prDetails) {
+    try {
+      // Try to get from docs branch first
+      const content = await this.githubClient.getFileContent(docFile, docsBranch);
+      const hasChanged = await this.githubClient.hasSourceFileChanged(
+          sourceFile,
+          docFile,
+          docsBranch,
+          prDetails.head
+      );
+
+      return { exists: true, content, hasChanged };
+
+    } catch (error) {
+      // Try base branch
+      try {
+        const content = await this.githubClient.getFileContent(docFile, prDetails.base);
+        return { exists: true, content, hasChanged: true };
+      } catch (baseError) {
+        return { exists: false, content: null, hasChanged: true };
+      }
+    }
+  }
+
+  /**
+   * Generate documentation using AI
+   * @param {string} filename - Source file name
+   * @param {string} content - File content
+   * @param {string} existingDoc - Existing documentation if any
+   * @param {object} prDetails - PR details
+   * @param {string} language - Documentation language
+   * @returns {Promise<string>} - Generated documentation
+   */
+  async generateDocumentation(filename, content, existingDoc, prDetails, language) {
+    const systemPrompt = config.docsPromptTemplates?.[language] || config.docsPromptTemplates?.en || '';
+
+    let userPrompt;
+    if (existingDoc) {
+      userPrompt = createUpdateDocsPrompt(filename, content, existingDoc, prDetails, language);
+    } else {
+      userPrompt = createDocsPrompt(filename, content, prDetails, language);
+    }
+
+    return await this.aiClient.sendPrompt(systemPrompt, userPrompt);
+  }
+
+  /**
+   * Create or update documentation PR
+   * @param {object} prDetails - Original PR details
+   * @param {string} docsBranch - Documentation branch
+   * @param {object} existingPR - Existing PR if any
+   * @param {object} results - Processing results
+   * @param {object} command - Command details
+   * @param {string} username - User who triggered action
+   */
+  async createOrUpdateDocsPR(prDetails, docsBranch, existingPR, results, command, username) {
+    const totalProcessed = results.generated.length + results.updated.length;
+
+    if (totalProcessed === 0 && results.failed.length > 0) {
+      // All files failed
+      await this.githubClient.createComment(
+          prDetails.number,
+          `❌ @${username} Documentation generation failed for all files.\n\n` +
+          `**Failed files:**\n${results.failed.map(f => `- ${f.filename}: ${f.error}`).join('\n')}`
+      );
+      return;
+    }
+
+    let prUrl;
 
     if (existingPR) {
-      console.log(`Found existing documentation PR #${existingPR.number}. Will update it.`);
-    } else if (!branchCreated) {
-      console.log(`Using existing branch: ${docsBranch}`);
-    } else {
-      console.log(`Created new branch: ${docsBranch}`);
+      // Update existing PR
+      prUrl = existingPR.url;
+      await this.postUpdateComment(existingPR.number, results, command, username);
+    } else if (totalProcessed > 0) {
+      // Create new PR
+      const pr = await this.createDocsPR(prDetails, docsBranch, results, command);
+      prUrl = pr.html_url;
     }
 
-    // Generate documentation for each file
-    console.log(`Starting documentation generation for ${filteredFiles.length} files...`);
+    // Post summary
+    await this.postSummaryComment(prDetails.number, results, prUrl, existingPR, username);
+  }
 
-    const generatedFiles = [];
-    const updatedFiles = [];
-    const skippedFiles = [];
-    const failedFiles = [];
+  /**
+   * Create documentation PR
+   * @param {object} prDetails - Original PR details
+   * @param {string} docsBranch - Documentation branch
+   * @param {object} results - Processing results
+   * @param {object} command - Command details
+   * @returns {Promise<object>} - Created PR
+   */
+  async createDocsPR(prDetails, docsBranch, results, command) {
+    const title = `docs: Generate documentation for ${command.command} (PR #${prDetails.number})`;
 
-    for (const file of filteredFiles) {
-      try {
-        // Get file content
-        const content = await githubClient.getFileContent(file.filename, prDetails.head);
+    const body = this.generatePRBody(prDetails, results, command);
 
-        if (!content) {
-          console.log(`File not found: ${file.filename}`);
-          failedFiles.push({ filename: file.filename, reason: 'File not found.' });
-          continue;
-        }
+    try {
+      return await this.githubClient.createPR(title, body, docsBranch, prDetails.base);
+    } catch (error) {
+      if (error.message.includes('already exists')) {
+        this.logger.warn('PR already exists but was not found earlier');
+        return { html_url: 'existing PR' };
+      }
+      throw error;
+    }
+  }
 
-        // Create documentation filename
-        const basename = path.basename(file.filename).split('.')[0];
-        const docsDir = `docs/${command.project}`;
-        const docFilename = `${docsDir}/${basename}.adoc`;
+  /**
+   * Generate PR body content
+   * @param {object} prDetails - Original PR details
+   * @param {object} results - Processing results
+   * @param {object} command - Command details
+   * @returns {string} - PR body markdown
+   */
+  generatePRBody(prDetails, results, command) {
+    let body = `# ${command.command} Documentation Generation\n\n`;
+    body += `This PR contains automatically generated documentation for PR #${prDetails.number}.\n\n`;
 
-        // Check if documentation file already exists
-        let existingDocContent = null;
-        let isUpdate = false;
-        let hasExistingDoc = false;
+    if (results.generated.length > 0) {
+      body += `## 📄 Generated Documentation (${results.generated.length})\n`;
+      body += results.generated.map(f => `- ${f}`).join('\n');
+      body += '\n\n';
+    }
 
-        try {
-          existingDocContent = await githubClient.getFileContent(docFilename, docsBranch);
-          hasExistingDoc = true;
-          isUpdate = true;
-          console.log(`Existing documentation found for ${file.filename} in docs branch`);
-        } catch (error) {
-          try {
-            existingDocContent = await githubClient.getFileContent(docFilename, prDetails.base);
-            hasExistingDoc = true;
-            isUpdate = true;
-            console.log(`Existing documentation found for ${file.filename} in base branch`);
-          } catch (baseError) {
-            console.log(`No existing documentation for ${file.filename}, creating new`);
-            hasExistingDoc = false;
-            isUpdate = false;
-          }
-        }
+    if (results.updated.length > 0) {
+      body += `## 📝 Updated Documentation (${results.updated.length})\n`;
+      body += results.updated.map(f => `- ${f}`).join('\n');
+      body += '\n\n';
+    }
 
-        if (hasExistingDoc) {
-          const sourceChanged = await hasSourceFileChanged(
-              githubClient,
-              file.filename,
-              docFilename,
-              docsBranch,
-              prDetails.head
-          );
+    if (results.skipped.length > 0) {
+      body += `## ⏭️ Skipped Files (${results.skipped.length})\n`;
+      body += results.skipped.map(f => `- ${f.source} - ${f.reason}`).join('\n');
+      body += '\n\n';
+    }
 
-          if (!sourceChanged) {
-            console.log(`Skipping ${file.filename} - source file hasn't changed since last documentation`);
-            skippedFiles.push({
-              filename: file.filename,
-              docFilename: docFilename,
-              reason: 'Source file unchanged since last documentation'
-            });
-            continue;
-          }
-        }
+    if (results.failed.length > 0) {
+      body += `## ❌ Failed Files (${results.failed.length})\n`;
+      body += results.failed.map(f => `- ${f.filename}: ${f.error}`).join('\n');
+      body += '\n\n';
+    }
 
-        // Generate documentation
-        console.log(`${isUpdate ? 'Updating' : 'Generating'} documentation for: ${file.filename}`);
-        const systemPrompt = docsPromptTemplates[command.lang] || docsPromptTemplates.en;
+    body += `---\n`;
+    body += `**Source PR:** #${prDetails.number} - ${prDetails.title}\n`;
+    body += `**Command:** \`${command.rawCommand}\`\n`;
+    body += `**Language:** ${command.options.lang}\n\n`;
+    body += `*This documentation was automatically generated. Please review and modify as needed.*`;
 
-        let userPrompt;
-        if (isUpdate && existingDocContent) {
-          // Update existing documentation
-          userPrompt = createUpdateDocsPrompt(file.filename, content, existingDocContent, prDetails, command.lang);
-        } else {
-          // Create new documentation
-          userPrompt = createDocsPrompt(file.filename, content, prDetails, command.lang);
-        }
+    return body;
+  }
 
-        // Send request to AI
-        const documentContent = await aiClient.sendPrompt(systemPrompt, userPrompt);
+  /**
+   * Post update comment on existing PR
+   * @param {number} prNumber - Documentation PR number
+   * @param {object} results - Processing results
+   * @param {object} command - Command details
+   * @param {string} username - User who triggered action
+   */
+  async postUpdateComment(prNumber, results, command, username) {
+    let comment = `📝 Documentation updated by @${username}\n\n`;
 
-        // Commit documentation file
-        await githubClient.commitFile(
-            docsBranch,
-            docFilename,
-            documentContent,
-            `docs: ${isUpdate ? 'Update' : 'Generate'} documentation for ${basename} (PR #${prNumber})`
-        );
+    if (results.generated.length > 0) {
+      comment += `**New documentation:** ${results.generated.length} files\n`;
+    }
 
-        if (isUpdate) {
-          updatedFiles.push(docFilename);
-        } else {
-          generatedFiles.push(docFilename);
-        }
-        console.log(`Documentation completed: ${docFilename}`);
+    if (results.updated.length > 0) {
+      comment += `**Updated documentation:** ${results.updated.length} files\n`;
+    }
 
-      } catch (error) {
-        console.error(`Error processing file: ${file.filename}`, error);
-        failedFiles.push({
-          filename: file.filename,
-          reason: `Error occurred: ${error.message}`
-        });
+    if (results.skipped.length > 0) {
+      comment += `**Skipped (unchanged):** ${results.skipped.length} files\n`;
+    }
+
+    if (results.failed.length > 0) {
+      comment += `**Failed:** ${results.failed.length} files\n`;
+      comment += '\nFailed files:\n';
+      comment += results.failed.map(f => `- ${f.filename}: ${f.error}`).join('\n');
+    }
+
+    comment += `\n\nCommand: \`${command.rawCommand}\``;
+
+    await this.githubClient.createComment(prNumber, comment);
+  }
+
+  /**
+   * Post summary comment on source PR
+   * @param {number} prNumber - Source PR number
+   * @param {object} results - Processing results
+   * @param {string} prUrl - Documentation PR URL
+   * @param {boolean} existingPR - Whether PR existed
+   * @param {string} username - User who triggered action
+   */
+  async postSummaryComment(prNumber, results, prUrl, existingPR, username) {
+    const total = results.generated.length + results.updated.length + results.skipped.length;
+    const processed = results.generated.length + results.updated.length;
+
+    let comment = `✅ @${username} Documentation generation completed!\n\n`;
+    comment += `📊 **Summary:**\n`;
+    comment += `- Total files: ${total}\n`;
+    comment += `- Generated: ${results.generated.length}\n`;
+    comment += `- Updated: ${results.updated.length}\n`;
+    comment += `- Skipped: ${results.skipped.length}\n`;
+    comment += `- Failed: ${results.failed.length}\n\n`;
+
+    if (prUrl) {
+      comment += `📚 **Documentation PR:** ${prUrl} (${existingPR ? 'updated' : 'created'})\n`;
+    }
+
+    if (results.failed.length > 0) {
+      comment += `\n⚠️ **Some files failed to process:**\n`;
+      comment += results.failed.slice(0, 5).map(f => `- ${f.filename}: ${f.error}`).join('\n');
+      if (results.failed.length > 5) {
+        comment += `\n...and ${results.failed.length - 5} more`;
       }
     }
 
-    // Summary and PR creation/update
-    const totalProcessedFiles = generatedFiles.length + updatedFiles.length;
+    await this.githubClient.createComment(prNumber, comment);
+  }
 
-    if (totalProcessedFiles > 0 || skippedFiles.length > 0) {
-      let prUrl;
-
-      if (existingPR) {
-        // Use existing PR
-        prUrl = existingPR.url;
-
-        // 기존 문서 PR에 상세한 업데이트 댓글 추가
-        let updateComment = `📝 Documentation updated for PR #${prNumber} by @${payload.comment.user.login}\n`;
-
-        if (generatedFiles.length > 0) {
-          updateComment += `\n**New documentation:**\n${generatedFiles.map(file => `- ${file}`).join('\n')}`;
-        }
-
-        if (updatedFiles.length > 0) {
-          updateComment += `\n**Updated documentation:**\n${updatedFiles.map(file => `- ${file}`).join('\n')}`;
-        }
-
-        if (skippedFiles.length > 0) {
-          updateComment += `\n**Skipped (unchanged):**\n${skippedFiles.map(file => `- ${file.docFilename} (${file.reason})`).join('\n')}`;
-        }
-
-        if (failedFiles.length > 0) {
-          updateComment += `\n**Failed:**\n${failedFiles.map(f => `- ${f.filename}: ${f.reason}`).join('\n')}`;
-        }
-
-        updateComment += `\n\nCommand: \`${commentBody}\``;
-
-        await githubClient.createPRComment(existingPR.number, updateComment);
-      } else {
-        // Create new PR
-        console.log('Creating new documentation PR...');
-
-        const prBody = `# ${command.project} Documentation Generation
-        
-Documentation was automatically generated for PR #${prNumber}.
-
-## Generated Documentation Files
-${generatedFiles.map(file => `- ${file}`).join('\n')}
-
-${updatedFiles.length > 0 ? `
-## Updated Documentation Files
-${updatedFiles.map(file => `- ${file}`).join('\n')}
-` : ''}
-
-${failedFiles.length > 0 ? `
-## Failed Files
-${failedFiles.map(f => `- ${f.filename}: ${f.reason}`).join('\n')}
-` : ''}
-
-This documentation was automatically generated. Please review and modify the content if needed.`;
-
-        const prTitle = `docs: Generate documentation for ${command.project} (PR #${prNumber})`;
-
-        try {
-          const pr = await githubClient.createPR(
-              prTitle,
-              prBody,
-              docsBranch,
-              prDetails.base
-          );
-          prUrl = pr.html_url;
-        } catch (error) {
-          if (error.message.includes('A pull request already exists')) {
-            // This shouldn't happen with our new logic, but just in case
-            prUrl = 'existing PR (could not retrieve URL)';
-          } else {
-            throw error;
-          }
-        }
-      }
-
-      let summaryComment = `✅ @${payload.comment.user.login} Documentation generation completed.\n\n`;
-      summaryComment += `${existingPR ? 'Updated' : 'Created'} documentation: ${prUrl}\n\n`;
-
-      if (generatedFiles.length > 0) summaryComment += `**New:** ${generatedFiles.length} files\n`;
-      if (updatedFiles.length > 0) summaryComment += `**Updated:** ${updatedFiles.length} files\n`;
-      if (skippedFiles.length > 0) summaryComment += `**Skipped:** ${skippedFiles.length} files (unchanged)\n`;
-      if (failedFiles.length > 0) summaryComment += `**Failed:** ${failedFiles.length} files\n`;
-
-      await githubClient.createPRComment(prNumber, summaryComment);
-
-    } else {
-      // All files failed
-      await githubClient.createPRComment(
-          prNumber,
-          `❌ @${payload.comment.user.login} Documentation generation failed.
-        
-Failed to process all files (${failedFiles.length}).
-Main error: ${failedFiles[0]?.reason || 'Unknown error'}`
-      );
-    }
-
-    console.log('PR Documentation Generator completed.');
-
-  } catch (error) {
-    console.error('Error during documentation generation:', error);
-    core.setFailed(`Documentation generation failed: ${error.message}`);
-
-    // Leave error message if issue comment context exists
+  /**
+   * Post error comment
+   * @param {string} errorMessage - Error message to post
+   */
+  async postErrorComment(errorMessage) {
     try {
       const payload = github.context.payload;
-      if (payload.issue && payload.comment) {
-        const githubClient = new GitHubClient();
-        await githubClient.createPRComment(
+      if (payload?.issue?.number && payload?.comment?.user?.login && this.githubClient) {
+        await this.githubClient.createComment(
             payload.issue.number,
-            `❌ @${payload.comment.user.login} An error occurred during documentation generation: ${error.message}`
+            `❌ @${payload.comment.user.login} Error: ${errorMessage}`
         );
       }
-    } catch (commentError) {
-      console.error('Failed to create error comment:', commentError);
+    } catch (error) {
+      this.logger.error('Failed to post error comment', error);
     }
   }
 }
 
-// Execute main function
-main();
+// Main execution
+async function main() {
+  const generator = new DocumentationGenerator();
+  await generator.run();
+}
+
+// Execute if running directly
+if (require.main === module) {
+  main();
+}
 
 module.exports = {
-  main,
-  parseCommand,
-  filterFilesByScope,
-  hasSourceFileChanged,
-  shouldDocumentFile
+  DocumentationGenerator,
+  main
 };
