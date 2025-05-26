@@ -539,3 +539,5 @@ class GitHubClient {
     }
   }
 }
+
+module.exports = GitHubClient;
