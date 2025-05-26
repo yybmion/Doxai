@@ -15,10 +15,12 @@ class GitHubClient {
     };
 
     if (!this.context.owner || !this.context.repo) {
-      throw new Error('GitHub repository context not available. Ensure GITHUB_REPOSITORY is set.');
+      throw new Error(
+          'GitHub repository context not available. Ensure GITHUB_REPOSITORY is set.');
     }
 
-    this.logger.info(`Initialized for ${this.context.owner}/${this.context.repo}`);
+    this.logger.info(
+        `Initialized for ${this.context.owner}/${this.context.repo}`);
   }
 
   /**
@@ -32,9 +34,10 @@ class GitHubClient {
       const titlePattern = `docs: Generate documentation for ${project} (PR #${sourcePrNumber})`;
       const branchPattern = `docs/${project}-pr-${sourcePrNumber}`;
 
-      this.logger.debug(`Looking for PR with title: ${titlePattern} or branch: ${branchPattern}`);
+      this.logger.debug(
+          `Looking for PR with title: ${titlePattern} or branch: ${branchPattern}`);
 
-      const { data: prs } = await this.octokit.rest.pulls.list({
+      const {data: prs} = await this.octokit.rest.pulls.list({
         ...this.context,
         state: 'open',
         per_page: 100
@@ -46,7 +49,8 @@ class GitHubClient {
       );
 
       if (existingPR) {
-        this.logger.info(`Found existing documentation PR: #${existingPR.number}`);
+        this.logger.info(
+            `Found existing documentation PR: #${existingPR.number}`);
         return {
           number: existingPR.number,
           title: existingPR.title,
@@ -120,7 +124,7 @@ class GitHubClient {
    */
   async createBranch(branchName, baseBranch) {
     try {
-      const { data: refData } = await this.octokit.rest.git.getRef({
+      const {data: refData} = await this.octokit.rest.git.getRef({
         ...this.context,
         ref: `heads/${baseBranch}`,
       });
@@ -168,7 +172,7 @@ class GitHubClient {
    */
   async getPRDetails(prNumber) {
     try {
-      const { data: prData } = await this.octokit.rest.pulls.get({
+      const {data: prData} = await this.octokit.rest.pulls.get({
         ...this.context,
         pull_number: prNumber
       });
@@ -235,11 +239,13 @@ class GitHubClient {
         patch: file.patch
       }));
 
-      this.logger.info(`Retrieved ${processedFiles.length} changed files from PR #${prNumber}`);
+      this.logger.info(
+          `Retrieved ${processedFiles.length} changed files from PR #${prNumber}`);
       return processedFiles;
 
     } catch (error) {
-      this.logger.error(`Failed to get changed files for PR #${prNumber}`, error);
+      this.logger.error(`Failed to get changed files for PR #${prNumber}`,
+          error);
       throw new Error(`Failed to get changed files: ${error.message}`);
     }
   }
@@ -252,7 +258,7 @@ class GitHubClient {
    */
   async getFileContent(path, ref) {
     try {
-      const { data } = await this.octokit.rest.repos.getContent({
+      const {data} = await this.octokit.rest.repos.getContent({
         ...this.context,
         path,
         ref
@@ -267,7 +273,8 @@ class GitHubClient {
       }
 
       const content = Buffer.from(data.content, 'base64').toString();
-      this.logger.debug(`Retrieved content for ${path} (${content.length} bytes)`);
+      this.logger.debug(
+          `Retrieved content for ${path} (${content.length} bytes)`);
 
       return content;
 
@@ -294,7 +301,7 @@ class GitHubClient {
       // Get current file SHA if exists
       let sha;
       try {
-        const { data } = await this.octokit.rest.repos.getContent({
+        const {data} = await this.octokit.rest.repos.getContent({
           ...this.context,
           path,
           ref: branch
@@ -309,7 +316,7 @@ class GitHubClient {
         }
       }
 
-      const { data } = await this.octokit.rest.repos.createOrUpdateFileContents({
+      const {data} = await this.octokit.rest.repos.createOrUpdateFileContents({
         ...this.context,
         path,
         message,
@@ -346,7 +353,7 @@ class GitHubClient {
         throw new Error(`Base branch ${base} does not exist`);
       }
 
-      const { data } = await this.octokit.rest.pulls.create({
+      const {data} = await this.octokit.rest.pulls.create({
         ...this.context,
         title,
         body,
@@ -381,7 +388,7 @@ class GitHubClient {
    */
   async createComment(issueNumber, body) {
     try {
-      const { data } = await this.octokit.rest.issues.createComment({
+      const {data} = await this.octokit.rest.issues.createComment({
         ...this.context,
         issue_number: issueNumber,
         body
@@ -407,7 +414,7 @@ class GitHubClient {
   async hasSourceFileChanged(sourceFile, docFile, docsBranch, sourceBranch) {
     try {
       // Get last commit date for doc file
-      const { data: docCommits } = await this.octokit.rest.repos.listCommits({
+      const {data: docCommits} = await this.octokit.rest.repos.listCommits({
         ...this.context,
         path: docFile,
         sha: docsBranch,
@@ -415,14 +422,15 @@ class GitHubClient {
       });
 
       if (docCommits.length === 0) {
-        this.logger.debug('No commits found for doc file, assuming source changed');
+        this.logger.debug(
+            'No commits found for doc file, assuming source changed');
         return true;
       }
 
       const lastDocCommitDate = new Date(docCommits[0].commit.committer.date);
 
       // Get last commit date for source file
-      const { data: sourceCommits } = await this.octokit.rest.repos.listCommits({
+      const {data: sourceCommits} = await this.octokit.rest.repos.listCommits({
         ...this.context,
         path: sourceFile,
         sha: sourceBranch,
@@ -434,10 +442,12 @@ class GitHubClient {
         return false;
       }
 
-      const lastSourceCommitDate = new Date(sourceCommits[0].commit.committer.date);
+      const lastSourceCommitDate = new Date(
+          sourceCommits[0].commit.committer.date);
       const hasChanged = lastSourceCommitDate > lastDocCommitDate;
 
-      this.logger.debug(`Source file ${hasChanged ? 'has' : 'has not'} changed since last doc`, {
+      this.logger.debug(`Source file ${hasChanged ? 'has'
+          : 'has not'} changed since last doc`, {
         sourceFile,
         lastSourceCommit: lastSourceCommitDate.toISOString(),
         lastDocCommit: lastDocCommitDate.toISOString()
@@ -446,10 +456,86 @@ class GitHubClient {
       return hasChanged;
 
     } catch (error) {
-      this.logger.warn(`Could not determine change status for ${sourceFile}, assuming changed`, error);
+      this.logger.warn(
+          `Could not determine change status for ${sourceFile}, assuming changed`,
+          error);
       return true;
     }
   }
-}
 
-module.exports = GitHubClient;
+  /**
+   * Commit multiple files in a single commit
+   * @param {string} branch - Branch name
+   * @param {Array} files - Array of {path, content} objects
+   * @param {string} message - Commit message
+   * @returns {Promise<object>} - Commit result
+   */
+  async commitMultipleFiles(branch, files, message) {
+    try {
+      // Get the latest commit SHA for the branch
+      const {data: ref} = await this.octokit.rest.git.getRef({
+        ...this.context,
+        ref: `heads/${branch}`
+      });
+
+      const latestCommitSha = ref.object.sha;
+
+      // Get the tree SHA of the latest commit
+      const {data: commit} = await this.octokit.rest.git.getCommit({
+        ...this.context,
+        commit_sha: latestCommitSha
+      });
+
+      const baseTreeSha = commit.tree.sha;
+
+      // Create blobs for each file
+      const blobs = await Promise.all(
+          files.map(async (file) => {
+            const {data: blob} = await this.octokit.rest.git.createBlob({
+              ...this.context,
+              content: Buffer.from(file.content).toString('base64'),
+              encoding: 'base64'
+            });
+
+            return {
+              path: file.path,
+              mode: '100644',
+              type: 'blob',
+              sha: blob.sha
+            };
+          })
+      );
+
+      // Create a new tree with all the files
+      const {data: newTree} = await this.octokit.rest.git.createTree({
+        ...this.context,
+        base_tree: baseTreeSha,
+        tree: blobs
+      });
+
+      // Create a new commit
+      const {data: newCommit} = await this.octokit.rest.git.createCommit({
+        ...this.context,
+        message,
+        tree: newTree.sha,
+        parents: [latestCommitSha]
+      });
+
+      // Update the branch reference
+      await this.octokit.rest.git.updateRef({
+        ...this.context,
+        ref: `heads/${branch}`,
+        sha: newCommit.sha
+      });
+
+      this.logger.info(`Created commit ${newCommit.sha.substring(0,
+          7)} with ${files.length} files`);
+
+      return newCommit;
+
+    } catch (error) {
+      this.logger.error('Failed to commit multiple files', error);
+      throw new Error(`Failed to commit files: ${error.message}`);
+    }
+  }
+}

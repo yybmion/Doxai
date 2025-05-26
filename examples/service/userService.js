@@ -122,31 +122,6 @@ class UserService {
   }
 
   /**
-   * Update user profile
-   * @param {string} userId - User ID
-   * @param {Object} updateData - Data to update
-   * @returns {Promise<Object>} Updated user object
-   * @throws {NotFoundError} If user not found
-   */
-  async updateUserProfile(userId, updateData) {
-    // Remove sensitive fields that shouldn't be updated directly
-    const { password, email, role, isActive, ...safeUpdateData } = updateData;
-
-    const updatedUser = await this.userRepository.update(userId, {
-      ...safeUpdateData,
-      updatedAt: new Date()
-    });
-
-    if (!updatedUser) {
-      throw new NotFoundError('User not found');
-    }
-
-    const { password: _, ...userWithoutPassword } = updatedUser;
-    logger.info(`User profile updated: ${userId}`);
-    return userWithoutPassword;
-  }
-
-  /**
    * Change user password
    * @param {string} userId - User ID
    * @param {string} currentPassword - Current password
