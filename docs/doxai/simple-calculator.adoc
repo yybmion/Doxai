@@ -1,22 +1,23 @@
+```asciidoc
 = Simple Calculator Class
 :toc:
 :source-highlighter: highlight.js
 
 == Overview
 
-The `Simple Calculator Class` is responsible for performing basic arithmetic operations (addition and subtraction). It maintains an internal value and provides methods to modify and retrieve it.  This class is designed for simple calculations and can be used as a building block in larger applications.
+The `Simple Calculator Class` is responsible for performing basic arithmetic operations (addition and reset). It maintains an internal value and provides methods to modify and reset it.  This class is designed for simple calculations and can be used as a building block in larger applications.
 
 [cols="1,3"]
 |===
-|PR Number|#2
+|PR Number|#23
 |Author|@{yybmion}
-|Created Date|2025-05-21
-|Last Modified|2025-05-22 by @{yybmion}
+|Created Date|2025-05-26
+|Last Modified|2025-05-26 by @{yybmion}
 |===
 
 == Detailed Description
 
-The `Calculator` class encapsulates a single numerical value and offers methods to perform addition and subtraction on that value.  The `add` and `subtract` methods modify the internal value and utilize method chaining for concise code. The `getValue` method allows retrieval of the current value, and the `reset` method allows resetting the internal value to a specified value (defaulting to 0). The class is designed for simplicity and ease of use in scenarios requiring basic arithmetic operations.  The design prioritizes readability and maintainability.
+The `Calculator` class encapsulates a single numerical value and offers methods to perform addition and reset that value.  The `add` and `reset` methods modify the internal value and utilize method chaining for concise code. The class is designed for simplicity and ease of use in scenarios requiring basic arithmetic operations.  The design prioritizes readability and maintainability.
 
 == Main Use Cases
 
@@ -24,7 +25,8 @@ The `Calculator` class encapsulates a single numerical value and offers methods 
 ----
 // Simple example code using this class
 const calc = new Calculator(5);
-calc.add(3).subtract(2).getValue(); // Returns 6
+calc.add(3).reset(10); // Resets to 10
+console.log(calc.value); // Outputs 10
 ----
 
 == Dependencies
@@ -60,50 +62,6 @@ return this;
 const result = calc.add(5);
 ----
 
-=== subtract(num)
-
-[source,javascript]
-----
-this.value -= num;
-return this;
-----
-
-*Purpose*: Subtracts the input number `num` from the current value of the calculator.
-
-*Parameters*:
-
-* `num` - {number} The number to be subtracted. Must be a valid number.
-
-*Return Value*: {Calculator} Returns the `Calculator` instance itself, enabling method chaining.
-
-*Exceptions*:
-
-* None explicitly defined in the code. However, if `num` is not a number, it may lead to unexpected behavior.
-
-*Usage Example*:
-
-[source,javascript]
-----
-const result = calc.subtract(3);
-----
-
-=== getValue()
-
-*Purpose*: Returns the current value stored in the calculator.
-
-*Parameters*: None
-
-*Return Value*: {number} The current numerical value of the calculator.
-
-*Exceptions*: None
-
-*Usage Example*:
-
-[source,javascript]
-----
-const currentValue = calc.getValue();
-----
-
 === reset(value = 0)
 
 [source,javascript]
@@ -135,5 +93,7 @@ calc.reset(10);
 == Important Notes
 
 * Error handling for non-numeric input is not explicitly implemented in the provided code.  Robust error handling should be added for production use.
-* The calculator only supports basic arithmetic operations; more advanced functionalities would require extending the class.
+* The calculator only supports addition and reset operations; more advanced functionalities would require extending the class.
 
+
+```
