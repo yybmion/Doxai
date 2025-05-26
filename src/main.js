@@ -215,13 +215,144 @@ class DocumentationGenerator {
         `🔄 @${username} Starting documentation generation for ${files.length} files...`
     );
 
-    // Process each file
+    // Process all files and collect changes
+    const filesToCommit = [];
+
     for (const file of files) {
-      await this.processFile(file, prDetails, docsBranch, command, results);
+      try {
+        const processedFile = await this.processFileForBatch(file, prDetails, docsBranch, command);
+
+        if (processedFile) {
+          filesToCommit.push(processedFile);
+
+          if (processedFile.isNew) {
+            results.generated.push(processedFile.path);
+          } else {
+            results.updated.push(processedFile.path);
+          }
+        } else {
+          results.skipped.push({
+            source: file.filename,
+            doc: this.getDocPath(file.filename, command.command),
+            reason: 'Source unchanged'
+          });
+        }
+      } catch (error) {
+        this.logger.error(`Failed to process file: ${file.filename}`, error);
+        results.failed.push({
+          filename: file.filename,
+          error: error.message
+        });
+      }
+    }
+
+    // Commit all files at once if there are any to commit
+    if (filesToCommit.length > 0) {
+      const commitMessage = this.createCommitMessage(prDetails.number, results, command);
+
+      try {
+        await this.githubClient.commitMultipleFiles(
+            docsBranch,
+            filesToCommit,
+            commitMessage
+        );
+        this.logger.info(`Committed ${filesToCommit.length} files in a single commit`);
+      } catch (error) {
+        this.logger.error('Failed to commit files as batch, falling back to individual commits', error);
+        // Fallback to individual commits if batch commit fails
+        for (const file of filesToCommit) {
+          await this.githubClient.commitFile(
+              docsBranch,
+              file.path,
+              file.content,
+              commitMessage
+          );
+        }
+      }
     }
 
     // Create or update PR
     await this.createOrUpdateDocsPR(prDetails, docsBranch, existingPR, results, command, username);
+  }
+
+  /**
+   * Process a single file for batch commit (doesn't commit immediately)
+   * @param {object} file - File to process
+   * @param {object} prDetails - PR details
+   * @param {string} docsBranch - Documentation branch
+   * @param {object} command - Command details
+   * @returns {object|null} - File data to commit or null if skipped
+   */
+  async processFileForBatch(file, prDetails, docsBranch, command) {
+    this.logger.info(`Processing file: ${file.filename}`);
+
+    // Get file content
+    const content = await this.githubClient.getFileContent(file.filename, prDetails.head);
+
+    // Generate documentation path
+    const docPath = this.getDocPath(file.filename, command.command);
+
+    // Check for existing documentation
+    const { exists, content: existingDoc, hasChanged } = await this.checkExistingDoc(
+        file.filename,
+        docPath,
+        docsBranch,
+        prDetails
+    );
+
+    if (exists && !hasChanged) {
+      this.logger.info(`Skipping ${file.filename} - no changes since last documentation`);
+      return null;
+    }
+
+    // Generate documentation
+    const docContent = await this.generateDocumentation(
+        file.filename,
+        content,
+        existingDoc,
+        prDetails,
+        command.options.lang
+    );
+
+    return {
+      path: docPath,
+      content: docContent,
+      isNew: !exists
+    };
+  }
+
+  /**
+   * Get documentation file path
+   * @param {string} sourceFile - Source file path
+   * @param {string} project - Project name
+   * @returns {string} - Documentation file path
+   */
+  getDocPath(sourceFile, project) {
+    const basename = path.basename(sourceFile, path.extname(sourceFile));
+    return `docs/${project}/${basename}.adoc`;
+  }
+
+  /**
+   * Create commit message for batch commit
+   * @param {number} prNumber - PR number
+   * @param {object} results - Processing results
+   * @param {object} command - Command details
+   * @returns {string} - Commit message
+   */
+  createCommitMessage(prNumber, results, command) {
+    const parts = [];
+
+    if (results.generated.length > 0) {
+      parts.push(`${results.generated.length} new`);
+    }
+    if (results.updated.length > 0) {
+      parts.push(`${results.updated.length} updated`);
+    }
+
+    const summary = parts.length > 0 ? ` (${parts.join(', ')})` : '';
+    const scope = command.options.scope !== 'all' ? ` [${command.options.scope}]` : '';
+
+    return `docs: Generate documentation for PR #${prNumber}${summary}${scope}`;
   }
 
   /**
