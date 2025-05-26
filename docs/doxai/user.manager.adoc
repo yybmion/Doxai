@@ -1,0 +1,114 @@
+```asciidoc
+= UserManager Class Documentation
+
+== Overview
+
+This document describes the `UserManager` class, a simple JavaScript class for managing user accounts.  The class uses a `Map` to store user data, providing methods for adding, retrieving, updating, removing, and querying users.
+
+== PR Information
+
+* PR Number: 3
+* Author: yybmion
+* Created Date: 2025-05-21
+* Last Modified: 2025-05-26 by yybmion
+
+== Class: UserManager
+
+[source,javascript]
+----
+class UserManager {
+  // ... methods ...
+}
+----
+
+=== Constructor: `constructor()`
+
+Creates a new `UserManager` instance. Initializes an internal `Map` called `users` to store user data.
+
+=== Method: `addUser(id, userData)`
+
+Adds a new user to the system.
+
+* **Parameters:**
+    * `id` (string): Unique identifier for the user.
+    * `userData` (object): User information.  Must contain `name` (string) and `email` (string).  May optionally contain `role` (string, defaults to 'user').
+* **Returns:** (boolean) `true` if user was added successfully, `false` if a user with the given ID already exists.
+* **Note:**  The method adds `createdAt` (Date) and `lastLogin` (null) properties to the user object.
+
+
+=== Method: `getUser(id)`
+
+Retrieves a user by their ID.
+
+* **Parameters:**
+    * `id` (string): The user ID to look up.
+* **Returns:** (object|null) The user object or `null` if not found.
+
+
+=== Method: `updateUser(id, updatedData)`
+
+Updates an existing user's information.
+
+* **Parameters:**
+    * `id` (string): The user ID to update.
+    * `updatedData` (object): The data to update.
+* **Returns:** (boolean) `true` if user was updated successfully, `false` if user doesn't exist.
+* **Note:** The method adds `updatedAt` (Date) property to the updated user object.
+
+
+=== Method: `removeUser(id)`
+
+Removes a user from the system.
+
+* **Parameters:**
+    * `id` (string): The user ID to remove.
+* **Returns:** (boolean) `true` if user was removed successfully, `false` if user doesn't exist.
+
+
+=== Method: `recordLogin(id)`
+
+Records a user login event. Updates the `lastLogin` property of the user object.
+
+* **Parameters:**
+    * `id` (string): The user ID.
+* **Returns:** (boolean) `true` if login was recorded, `false` if user doesn't exist.
+
+
+=== Method: `getUsersByRole(role)`
+
+Gets all users with a specific role.
+
+* **Parameters:**
+    * `role` (string): The role to filter by.
+* **Returns:** (array) Array of user objects with the specified role.
+
+
+== Dependencies
+
+The `UserManager` class has no external dependencies beyond the built-in JavaScript `Map` object and `Date` object.
+
+== Example Usage
+
+[source,javascript]
+----
+const UserManager = require('./user.manager'); // Assuming the file is named user.manager.js
+
+const userManager = new UserManager();
+
+userManager.addUser('123', { name: 'John Doe', email: 'john.doe@example.com' });
+const user = userManager.getUser('123');
+console.log(user); // Output: { name: 'John Doe', email: 'john.doe@example.com', role: 'user', createdAt: Date, lastLogin: null }
+
+userManager.updateUser('123', { email: 'john.updated@example.com' });
+const updatedUser = userManager.getUser('123');
+console.log(updatedUser); // Output: Updated user object
+
+userManager.recordLogin('123');
+console.log(updatedUser); // Output: Updated user object with lastLogin property set
+
+const users = userManager.getUsersByRole('user');
+console.log(users); // Output: Array of users with role 'user'
+
+userManager.removeUser('123');
+----
+```
