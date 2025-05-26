@@ -1,0 +1,131 @@
+```asciidoc
+= DataValidator.js - Data Validation Utility
+
+== PR Information
+
+* PR Number: 26
+* Author: yybmion
+* Created Date: 2025-05-26
+* Last Modified: 2025-05-26 by yybmion
+
+== Description
+
+This JavaScript file provides a `DataValidator` class for comprehensive data validation.  It allows defining validation schemas, registering custom validators, and validating data against these schemas.  The validator supports various data types and validation rules, including nested objects and arrays.  A singleton instance (`validator`) is exported with pre-registered common validators.  A `ValidationError` class is also provided for handling validation errors.
+
+== Class: DataValidator
+
+=== Constructor: `constructor()`
+
+Creates a new `DataValidator` instance.  Initializes an internal `Map` for schemas (`rules`) and another for custom validators (`customValidators`).
+
+=== Method: `defineSchema(name, schema)`
+
+Defines a validation schema.
+
+* `name`:: String - The name of the schema.
+* `schema`:: Object - An object defining the validation rules for each field.  The keys are field names, and the values are validation rules (see below for details on validation rules).
+* Returns:: `DataValidator` - Returns `this` for method chaining.
+
+=== Method: `registerValidator(name, validator)`
+
+Registers a custom validator function.
+
+* `name`:: String - The name of the custom validator.
+* `validator`:: Function - A function that takes a value and a field name as arguments and returns `true` if the value is valid, or an error message (string) if it's invalid.
+* Throws:: `Error` - If `validator` is not a function.
+* Returns:: `DataValidator` - Returns `this` for method chaining.
+
+=== Method: `validate(data, schemaOrName)`
+
+Validates data against a schema.
+
+* `data`:: * - The data to validate.
+* `schemaOrName`:: String or Object - Either the name of a previously defined schema (using `defineSchema`) or a schema object directly.
+* Throws:: `Error` - If the schema is not found.
+* Returns:: Object - An object containing:
+    * `isValid`:: Boolean - `true` if the data is valid, `false` otherwise.
+    * `errors`:: Object - An object containing errors for each invalid field.  The keys are field names, and the values are arrays of error messages.
+    * `data`:: Object - The validated data (only fields that passed validation are included).  NOTE:  The structure of this object may differ from the input `data` object if nested objects are involved.
+
+=== Method: `validateField(value, rules, fieldName)`
+
+_Private method._ Validates a single field.  This method is called internally by `validate`.
+
+* `value`:: * - The value of the field.
+* `rules`:: Object or Array - Validation rules for the field.  Can be a single rule object or an array of rule objects or strings.
+* `fieldName`:: String - The name of the field (used in error messages).
+* Returns:: Array - An array of error messages.
+
+=== Method: `applyRules(value, rules, fieldName)`
+
+_Private method._ Applies complex validation rules.  This method is called internally by `validateField`.
+
+=== Method: `validateType(value, type)`
+
+_Private method._ Validates the data type of a value.
+
+=== Method: `isValidEmail(email)`
+
+_Private method._ Checks if an email address is valid using a regular expression.
+
+=== Method: `isValidUrl(url)`
+
+_Private method._ Checks if a URL is valid using the `URL` constructor.
+
+=== Method: `isArrayUnique(array)`
+
+_Private method._ Checks if an array contains only unique values.
+
+=== Method: `getNestedValue(obj, path)`
+
+_Private method._ Retrieves a nested value from an object using a dot-separated path.
+
+=== Method: `setNestedValue(obj, path, value)`
+
+_Private method._ Sets a nested value in an object using a dot-separated path.
+
+=== Method: `createSanitizer(schemaOrName)`
+
+Creates a sanitizer function for a given schema.  This function validates data and returns only the valid parts, throwing a `ValidationError` if validation fails.
+
+* `schemaOrName`:: String or Object - The schema name or schema object.
+* Returns:: Function - A sanitizer function that takes data as input and returns sanitized data.
+
+
+== Class: ValidationError
+
+A custom error class for handling validation errors.  It extends the built-in `Error` class and adds an `errors` property containing the validation errors.
+
+== Exported Variables
+
+* `DataValidator`:: The `DataValidator` class.
+* `ValidationError`:: The `ValidationError` class.
+* `validator`:: A singleton instance of `DataValidator` with pre-registered common validators (`phone`, `alphanumeric`, `strongPassword`).
+
+== Validation Rules
+
+Validation rules can be specified as:
+
+* Strings:  Simple type validation (`string`, `number`, `boolean`, `array`, `object`, `date`, `null`, `undefined`).
+* Objects: Complex validation rules, including:
+    * `type`:: String - Data type.
+    * `required`:: Boolean - Whether the field is required.
+    * `minLength`, `maxLength`:: Number - Minimum and maximum string length.
+    * `pattern`:: RegExp - Regular expression pattern.
+    * `email`, `url`:: Boolean - Email and URL validation.
+    * `min`, `max`:: Number - Minimum and maximum numeric values.
+    * `integer`:: Boolean - Whether the number must be an integer.
+    * `positive`:: Boolean - Whether the number must be positive.
+    * `minItems`, `maxItems`:: Number - Minimum and maximum array length.
+    * `unique`:: Boolean - Whether the array must contain unique items.
+    * `items`:: Object or Array - Validation rules for array items.
+    * `enum`:: Array - Allowed values.
+    * `custom`:: String - Name of a custom validator registered with `registerValidator`.
+    * `properties`:: Object - Validation rules for nested objects.
+* Functions: Custom validator functions.
+
+== Unclear Aspects
+
+The documentation for `validateField` and `applyRules` is limited.  The exact logic and behavior of these functions are not fully clear without detailed analysis of the code's internal workings.  Further clarification is needed to fully understand the intricacies of complex rule application and error handling within these private methods.
+
+```

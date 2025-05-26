@@ -144,6 +144,16 @@ async hasSourceFileChanged(sourceFile, docFile, docsBranch, sourceBranch) {
 
 Checks if a source file has been modified since the last commit to the corresponding documentation file.  Handles cases where no commits are found for either file.  If an error occurs during the comparison, it assumes the source file has changed.
 
+==== `commitMultipleFiles(branch, files, message)`
+
+[source,javascript]
+----
+async commitMultipleFiles(branch, files, message) {
+  // ...
+}
+----
+Commits multiple files in a single commit.  This method retrieves the latest commit SHA, creates blobs for each file, creates a new tree, creates a new commit, and updates the branch reference.  Error handling is included.
+
 
 == Example Usage (Illustrative)
 
@@ -165,4 +175,10 @@ run();
 ----
 
 Note: This is a simplified example.  Actual usage will depend on the specific needs of the application.  Error handling and logging are crucial in production environments.
+
+== PR Information
+- PR Number: 26
+- Author: yybmion
+- Created Date: 2025-05-26
+- Last Modified: 2025-05-26 by yybmion
 ```
