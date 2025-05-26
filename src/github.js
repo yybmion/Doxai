@@ -85,24 +85,26 @@ class GitHubClient {
         };
       }
 
-      // Try to create branch with original name
-      let finalBranchName = newBranch;
+      // Check if the branch exists
+      const branchExists = await this.branchExists(newBranch);
 
-      if (await this.branchExists(finalBranchName)) {
-        // If branch exists but no PR, create unique name
-        const timestamp = Math.floor(Date.now() / 1000);
-        finalBranchName = `${newBranch}-${timestamp}`;
-        this.logger.info(`Branch ${newBranch} exists, using ${finalBranchName}`);
-
-        if (await this.branchExists(finalBranchName)) {
-          // Very rare case, but use existing branch
-          return { branchName: finalBranchName, created: false, existingPR: null };
-        }
+      if (branchExists) {
+        // Branch exists but no PR - use the same branch
+        this.logger.info(`Using existing branch: ${newBranch}`);
+        return {
+          branchName: newBranch,
+          created: false,
+          existingPR: null
+        };
       }
 
-      // Create new branch
-      await this.createBranch(finalBranchName, baseBranch);
-      return { branchName: finalBranchName, created: true, existingPR: null };
+      // Create new branch only if it doesn't exist
+      await this.createBranch(newBranch, baseBranch);
+      return {
+        branchName: newBranch,
+        created: true,
+        existingPR: null
+      };
 
     } catch (error) {
       this.logger.error('Failed to create or get docs branch', error);
