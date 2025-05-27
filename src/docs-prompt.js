@@ -111,7 +111,7 @@ class DocsPromptGenerator {
       ko: {
         create: `# 코드 문서화 요청
 
-다음 ${codeLanguage} 파일을 분석하여 한국어로 AsciiDoc 형식의 기술 문서를 생성해주세요.
+다음 ${codeLanguage} 파일을 분석하여 **한국어로** AsciiDoc 형식의 기술 문서를 생성해주세요.
 
 ## PR 정보
 - PR 번호: \${prNumber}
@@ -128,17 +128,19 @@ class DocsPromptGenerator {
 \${fileContent}
 \`\`\`
 
-## 요청사항
-1. 위 코드를 철저히 분석하여 AsciiDoc 형식의 개발자 문서를 생성해주세요.
-2. 문서는 개발자가 이 코드를 이해하고 사용하는 데 필요한 모든 정보를 포함해야 합니다.
-3. 클래스/파일의 주요 기능, 메소드, 의존성 등을 명확하게 설명해주세요.
-4. 시스템 프롬프트에서 제공한 AsciiDoc 템플릿 형식을 정확히 따라주세요.
-5. 코드에서 명확하지 않은 부분은 추측하지 말고, 문서에 이를 명시해주세요.
-6. AsciiDoc 문서만 반환해주세요. 추가 설명은 필요 없습니다.`,
+## 중요한 요청사항
+1. **반드시 한국어로 문서를 작성해주세요.**
+2. 위 코드를 철저히 분석하여 AsciiDoc 형식의 개발자 문서를 생성해주세요.
+3. 문서는 개발자가 이 코드를 이해하고 사용하는 데 필요한 모든 정보를 포함해야 합니다.
+4. 클래스/파일의 주요 기능, 메소드, 의존성 등을 명확하게 설명해주세요.
+5. 시스템 프롬프트에서 제공한 AsciiDoc 템플릿 형식을 정확히 따라주세요.
+6. 코드에서 명확하지 않은 부분은 추측하지 말고, 문서에 이를 명시해주세요.
+7. **모든 설명과 주석은 반드시 한국어로 작성해주세요.**
+8. AsciiDoc 문서만 반환해주세요. 추가 설명은 필요 없습니다.`,
 
         update: `# 코드 문서 업데이트 요청
 
-다음 ${codeLanguage} 파일이 변경되었습니다. 기존 문서를 업데이트해주세요.
+다음 ${codeLanguage} 파일이 변경되었습니다. 기존 문서를 **한국어로** 업데이트해주세요.
 
 ## PR 정보
 - PR 번호: \${prNumber}
@@ -160,18 +162,20 @@ class DocsPromptGenerator {
 \${existingDocContent}
 \`\`\`
 
-## 요청사항
-1. 변경된 코드를 반영하여 기존 문서를 업데이트해주세요.
-2. 새로운 메소드나 기능은 문서에 추가하고, 제거된 것은 삭제해주세요.
-3. 기존 문서의 형식과 스타일을 유지해주세요.
-4. PR 정보 섹션을 최신 정보로 업데이트해주세요.
-5. 업데이트된 전체 AsciiDoc 문서를 반환해주세요.`
+## 중요한 요청사항
+1. **반드시 한국어로 문서를 업데이트해주세요.**
+2. 변경된 코드를 반영하여 기존 문서를 업데이트해주세요.
+3. 새로운 메소드나 기능은 문서에 추가하고, 제거된 것은 삭제해주세요.
+4. 기존 문서의 형식과 스타일을 유지해주세요.
+5. PR 정보 섹션을 최신 정보로 업데이트해주세요.
+6. **모든 설명과 주석은 반드시 한국어로 작성해주세요.**
+7. 업데이트된 전체 AsciiDoc 문서를 반환해주세요.`
       },
 
       en: {
         create: `# Documentation Request
 
-Please analyze the following ${codeLanguage} file and generate technical documentation in AsciiDoc format.
+Please analyze the following ${codeLanguage} file and generate technical documentation in AsciiDoc format **in English**.
 
 ## PR Information
 - PR Number: \${prNumber}
@@ -189,16 +193,18 @@ Please analyze the following ${codeLanguage} file and generate technical documen
 \`\`\`
 
 ## Requirements
-1. Thoroughly analyze the above code and generate developer documentation in AsciiDoc format.
-2. The documentation should include all necessary information for developers to understand and use this code.
-3. Clearly explain the main functionality, methods, and dependencies of the class/file.
-4. Follow the AsciiDoc template format provided in the system prompt exactly.
-5. Do not make assumptions about unclear parts; indicate these in the documentation.
-6. Return only the AsciiDoc document without additional explanations.`,
+1. **Generate documentation in English.**
+2. Thoroughly analyze the above code and generate developer documentation in AsciiDoc format.
+3. The documentation should include all necessary information for developers to understand and use this code.
+4. Clearly explain the main functionality, methods, and dependencies of the class/file.
+5. Follow the AsciiDoc template format provided in the system prompt exactly.
+6. Do not make assumptions about unclear parts; indicate these in the documentation.
+7. **All descriptions and comments must be written in English.**
+8. Return only the AsciiDoc document without additional explanations.`,
 
         update: `# Documentation Update Request
 
-The following ${codeLanguage} file has been modified. Please update the existing documentation.
+The following ${codeLanguage} file has been modified. Please update the existing documentation **in English**.
 
 ## PR Information
 - PR Number: \${prNumber}
@@ -221,15 +227,18 @@ The following ${codeLanguage} file has been modified. Please update the existing
 \`\`\`
 
 ## Requirements
-1. Update the existing documentation to reflect the code changes.
-2. Add new methods or features to the documentation and remove deleted ones.
-3. Maintain the existing document's format and style.
-4. Update the PR information section with the latest details.
-5. Return the complete updated AsciiDoc document.`
+1. **Update documentation in English.**
+2. Update the existing documentation to reflect the code changes.
+3. Add new methods or features to the documentation and remove deleted ones.
+4. Maintain the existing document's format and style.
+5. Update the PR information section with the latest details.
+6. **All descriptions and comments must be written in English.**
+7. Return the complete updated AsciiDoc document.`
       }
     };
 
-    return templates[language]?.[type] || templates.en[type];
+    const languageTemplates = templates[language] || templates.en;
+    return languageTemplates[type] || languageTemplates.create;
   }
 
   /**
@@ -239,7 +248,12 @@ The following ${codeLanguage} file has been modified. Please update the existing
    */
   getSystemPrompt(language = 'en') {
     const prompts = {
-      ko: `당신은 코드 문서화 전문가입니다. 제공된 코드 파일을 철저히 분석하여 AsciiDoc 형식의 정확하고 유용한 문서를 생성해야 합니다.
+      ko: `당신은 코드 문서화 전문가입니다. 제공된 코드 파일을 철저히 분석하여 **한국어로** AsciiDoc 형식의 정확하고 유용한 문서를 생성해야 합니다.
+
+## 중요: 언어 요구사항
+- **모든 문서는 반드시 한국어로 작성해야 합니다.**
+- 기술 용어는 한국어로 번역하되, 필요시 영어 원문을 괄호 안에 병기할 수 있습니다.
+- 예: "연결 리스트(Linked List)", "해시 테이블(Hash Table)"
 
 ## 분석 방법
 1. 코드를 전체적으로 살펴보고 주요 목적과 기능을 파악하세요.
@@ -255,7 +269,7 @@ The following ${codeLanguage} file has been modified. Please update the existing
 5. 발생 가능한 중요 예외 상황
 
 ## 문서화 원칙
-- 명확하고 간결하게 작성하세요.
+- **모든 내용을 한국어로 명확하고 간결하게 작성하세요.**
 - 기술적으로 정확한 설명을 제공하세요.
 - 개발자가 코드를 빠르게 이해하고 사용할 수 있도록 작성하세요.
 - 코드에서 명확하지 않은 부분이 있다면, 추측하지 말고 "이 부분의 목적은 코드에서 명확하지 않습니다"라고 표시하세요.
@@ -264,7 +278,12 @@ The following ${codeLanguage} file has been modified. Please update the existing
 
 ${this.getAsciiDocTemplate()}`,
 
-      en: `You are a code documentation expert. You need to thoroughly analyze the provided code file and generate precise and useful documentation in AsciiDoc format.
+      en: `You are a code documentation expert. You need to thoroughly analyze the provided code file and generate precise and useful documentation **in English** in AsciiDoc format.
+
+## Important: Language Requirements
+- **All documentation must be written in English.**
+- Use clear, professional English throughout the document.
+- Technical terms should be explained clearly for international developers.
 
 ## Analysis Method
 1. Review the code holistically to understand its main purpose and functionality.
@@ -280,7 +299,7 @@ ${this.getAsciiDocTemplate()}`,
 5. Important exceptions that may occur
 
 ## Documentation Principles
-- Write clearly and concisely.
+- **Write everything clearly and concisely in English.**
 - Provide technically accurate descriptions.
 - Write for developers to quickly understand and use the code.
 - If something is unclear in the code, don't guess - indicate "The purpose of this section is not clear from the code".
@@ -378,9 +397,13 @@ module.exports = {
     ko: promptGenerator.getSystemPrompt('ko'),
     en: promptGenerator.getSystemPrompt('en')
   },
-  createDocsPrompt: (filename, fileContent, prDetails, language) =>
-      promptGenerator.createDocsPrompt(filename, fileContent, prDetails, language),
-  createUpdateDocsPrompt: (filename, fileContent, existingDocContent, prDetails, language) =>
-      promptGenerator.createUpdateDocsPrompt(filename, fileContent, existingDocContent, prDetails, language),
+  createDocsPrompt: (filename, fileContent, prDetails, language) => {
+    console.log(`[DocsPrompt] Creating docs prompt for language: ${language}`);
+    return promptGenerator.createDocsPrompt(filename, fileContent, prDetails, language);
+  },
+  createUpdateDocsPrompt: (filename, fileContent, existingDocContent, prDetails, language) => {
+    console.log(`[DocsPrompt] Creating update docs prompt for language: ${language}`);
+    return promptGenerator.createUpdateDocsPrompt(filename, fileContent, existingDocContent, prDetails, language);
+  },
   DocsPromptGenerator
 };

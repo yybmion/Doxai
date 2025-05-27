@@ -183,6 +183,11 @@ class DocumentationGenerator {
   async processDocumentation(prDetails, files, command, username) {
     const prNumber = prDetails.number;
 
+    this.logger.info(`=== Process Documentation Debug ===`);
+    this.logger.info(`Command object:`, JSON.stringify(command, null, 2));
+    this.logger.info(`Language from command: ${command.options.lang}`);
+    this.logger.info(`=== End Process Documentation Debug ===`);
+
     // Setup documentation branch - always use the same branch name for a PR
     const docsBranchName = `docs/${command.command}-pr-${prNumber}`;
     const { branchName: docsBranch, created, existingPR } = await this.githubClient.createOrGetDocsBranch(
@@ -513,17 +518,44 @@ class DocumentationGenerator {
    * @param {string} language - Documentation language
    * @returns {Promise<string>} - Generated documentation
    */
+  /**
+   * Generate documentation using AI
+   * @param {string} filename - Source file name
+   * @param {string} content - File content
+   * @param {string} existingDoc - Existing documentation if any
+   * @param {object} prDetails - PR details
+   * @param {string} language - Documentation language
+   * @returns {Promise<string>} - Generated documentation
+   */
   async generateDocumentation(filename, content, existingDoc, prDetails, language) {
-    const systemPrompt = docsPromptTemplates[language] || docsPromptTemplates.en;
+    this.logger.info(`=== Documentation Generation Debug ===`);
+    this.logger.info(`Filename: ${filename}`);
+    this.logger.info(`Language: ${language}`);
+    this.logger.info(`Has existing doc: ${!!existingDoc}`);
+
+    const systemPrompt = docsPromptTemplates[language] || docsPromptTemplates.en || '';
+
+    this.logger.info(`System prompt language: ${language}`);
+    this.logger.debug(`System prompt preview: ${systemPrompt.substring(0, 200)}...`);
 
     let userPrompt;
     if (existingDoc) {
       userPrompt = createUpdateDocsPrompt(filename, content, existingDoc, prDetails, language);
+      this.logger.info('Using update prompt template');
     } else {
       userPrompt = createDocsPrompt(filename, content, prDetails, language);
+      this.logger.info('Using create prompt template');
     }
 
-    return await this.aiClient.sendPrompt(systemPrompt, userPrompt);
+    this.logger.debug(`User prompt preview: ${userPrompt.substring(0, 300)}...`);
+    this.logger.info(`Sending AI request with language: ${language}`);
+
+    const result = await this.aiClient.sendPrompt(systemPrompt, userPrompt);
+
+    this.logger.info(`AI response preview: ${result.substring(0, 200)}...`);
+    this.logger.info(`=== End Documentation Generation Debug ===`);
+
+    return result;
   }
 
   /**
