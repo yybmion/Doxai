@@ -1,0 +1,135 @@
+```asciidoc
+= Documentation Generator Action - Technical Documentation
+
+== Overview
+
+This document provides technical documentation for the `DocumentationGenerator` action, a GitHub Action that automatically generates documentation for merged pull requests (PRs).  The action parses commands from PR comments, filters changed files based on specified scopes, and uses an AI client to generate or update AsciiDoc documentation.  The generated documentation is then committed to a dedicated branch and a new PR is created or an existing one is updated.
+
+== Dependencies
+
+* `path`: Node.js core module for working with file paths.
+* `@actions/core`: GitHub Actions core library for interacting with the GitHub Actions runtime.
+* `@actions/github`: GitHub Actions library for interacting with the GitHub API.
+* `./github`: Custom module (implementation unclear).  Likely handles GitHub API interactions.
+* `./ai-client`: Custom module (implementation unclear).  Likely handles interactions with an AI service for documentation generation.
+* `./command-parser`: Custom module (implementation unclear).  Parses commands from PR comments.
+* `./file-filter`: Custom module (implementation unclear). Filters changed files based on scope.
+* `./logger`: Custom module (implementation unclear).  Provides logging functionality.
+* `./docs-prompt`: Custom module (implementation unclear).  Generates prompts for the AI client.
+* `./config`: Custom module (implementation unclear). Contains configuration settings, including prompt templates.
+
+
+== Class: DocumentationGenerator
+
+This class encapsulates the core logic of the documentation generation process.
+
+=== Constructor
+
+`DocumentationGenerator()`
+
+Initializes the logger, command parser, file filter, and sets up `githubClient` and `aiClient` to `null`.  These clients are initialized later in the `initializeClients` method.
+
+=== Methods
+
+==== `run()`
+
+The main entry point of the action.  It performs the following steps:
+
+1. Validates the environment and GitHub event.
+2. Parses the command from the PR comment.
+3. Initializes the GitHub and AI clients.
+4. Processes the PR to generate documentation.
+5. Handles errors and posts error comments if necessary.
+
+==== `validateEnvironment()`
+
+Validates that the GitHub event is an `issue_comment` event and that the comment is on a pull request. Returns an object with `isValid` (boolean) and `message` (string) properties.
+
+==== `parseCommand(payload)`
+
+Parses the command from the PR comment using the `commandParser`.  Validates the command and posts an error comment if the command is invalid. Returns the parsed command object or `null`.  The structure of the parsed command object is unclear.
+
+==== `initializeClients()`
+
+Initializes the `githubClient` and `aiClient` instances.  Error handling is included.
+
+==== `processPR(payload, command)`
+
+Processes the pull request.  It retrieves PR details, checks if the PR is merged, gets and filters changed files, and processes the documentation generation.
+
+==== `processDocumentation(prDetails, files, command, username)`
+
+Handles the core documentation generation process.  It creates or retrieves a documentation branch, processes individual files, commits changes, and creates or updates the documentation PR.
+
+==== `processFileForBatch(file, prDetails, docsBranch, command)`
+
+Processes a single file for batch commit.  Retrieves file content, generates documentation path, checks for existing documentation, and generates documentation using the AI client. Returns an object containing the file path, content, and a flag indicating whether it's a new file.
+
+==== `getDocPath(sourceFile, project)`
+
+Generates the path for the documentation file.
+
+==== `checkDocExists(docPath, branch)`
+
+Checks if a documentation file exists on a given branch.
+
+==== `createCommitMessage(prNumber, results, command)`
+
+Creates a commit message based on the processing results.
+
+==== `processFile(file, prDetails, docsBranch, command, results)`
+
+Processes a single file for documentation (older, non-batch version).  This method is largely duplicated by `processFileForBatch`.
+
+==== `checkExistingDoc(sourceFile, docFile, docsBranch, prDetails)`
+
+Checks for existing documentation, considering both the documentation branch and the base branch of the PR.
+
+==== `generateDocumentation(filename, content, existingDoc, prDetails, language)`
+
+Generates documentation using the AI client.  Uses prompts from `./docs-prompt` and configuration from `./config`.
+
+==== `createOrUpdateDocsPR(prDetails, docsBranch, existingPR, results, command, username)`
+
+Creates or updates the documentation PR based on the processing results.
+
+==== `createDocsPR(prDetails, docsBranch, results, command)`
+
+Creates a new documentation PR.
+
+==== `generatePRBody(prDetails, results, command)`
+
+Generates the markdown body for the documentation PR.
+
+==== `postUpdateComment(prNumber, results, command, username)`
+
+Posts an update comment on the existing documentation PR.
+
+==== `postSummaryComment(prNumber, results, prUrl, existingPR, username)`
+
+Posts a summary comment on the source PR.
+
+==== `postErrorComment(errorMessage)`
+
+Posts an error comment on the source PR.
+
+
+==  Unclear Aspects
+
+The implementation details of several custom modules are unclear, including:
+
+* `./github`:  Specific API calls and error handling are unknown.
+* `./ai-client`:  The AI service used and the specifics of prompt handling are unknown.
+* `./command-parser`: The command syntax and validation rules are unknown.
+* `./file-filter`: The filtering logic and scope options are unknown.
+* `./logger`: The logging level and output format are unknown.
+* `./docs-prompt`: The structure and content of the prompts are unknown.
+* `./config`: The configuration options and their defaults are unknown.
+
+The exact structure of several objects passed between methods (e.g., the parsed command, PR details, processing results) is also not explicitly defined.  Further documentation or code comments within these modules are needed for a complete understanding.
+
+
+== Conclusion
+
+The `DocumentationGenerator` action provides a robust framework for automated documentation generation.  However, a more detailed explanation of the internal workings of the custom modules and data structures is necessary for comprehensive understanding and maintenance.
+```
