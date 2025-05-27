@@ -1,0 +1,211 @@
+= DocsPromptGenerator
+:toc:
+:source-highlighter: highlight.js
+
+== Overview
+
+The `DocsPromptGenerator` class is responsible for generating prompts used to create and update documentation for code files.  It takes information about the file, its content, and the pull request details, and produces a formatted prompt suitable for a large language model (LLM) to generate AsciiDoc documentation. This class plays a crucial role in automating the documentation process.
+
+[cols="1,3"]
+|===
+|PR Number|#42
+|Author|@{yybmion}
+|Created Date|2025-05-27
+|Last Modified|2025-05-27 by @{yybmion}
+|===
+
+== Detailed Description
+
+This class simplifies the creation of prompts for generating AsciiDoc documentation. It handles the formatting of various pieces of information, including file details, pull request metadata, and code snippets.  The core functionality lies in its ability to generate different prompts depending on whether the documentation is being created for a new file or updated for an existing one.  It supports multiple languages for the documentation (currently English and Korean) and automatically detects the programming language of the code file based on its extension.  The prompts are designed to guide an LLM to produce well-structured and informative documentation.  The class uses pre-defined templates for the prompts, making it easy to customize the prompt structure and content.
+
+
+== Main Use Cases
+
+This class is primarily used to generate prompts for LLMs to create or update documentation.  Here's a simple example:
+
+[source,javascript]
+----
+const { createDocsPrompt } = require('./docs-prompt');
+const prDetails = { number: 42, author: 'yybmion', createdAt: '2025-05-27T12:00:00Z', updatedAt: '2025-05-27T13:00:00Z' };
+const filename = 'myFile.js';
+const fileContent = "// My JavaScript code";
+
+const prompt = createDocsPrompt(filename, fileContent, prDetails, 'en');
+console.log(prompt);
+----
+
+== Dependencies
+
+* `./config` - This module is likely responsible for holding configuration settings, such as the location of documentation templates.  The exact contents are not clear from the provided code.
+
+
+== Key Methods
+
+=== getLanguageFromFilename(filename)
+
+[source,javascript]
+----
+getLanguageFromFilename(filename) {
+  const extension = filename.split('.').pop().toLowerCase();
+  return this.codeLanguageMap[extension] || extension.toUpperCase();
+}
+----
+
+*Purpose*: Extracts the programming language from a filename based on its extension.
+
+*Parameters*:
+
+* `filename` - {string} The name of the file.
+
+*Return Value*: {string} The name of the programming language (e.g., "JavaScript", "Python").  If the extension is not found in `codeLanguageMap`, the uppercase extension is returned.
+
+*Exceptions*: None explicitly defined.
+
+*Usage Example*:
+
+[source,javascript]
+----
+const language = promptGenerator.getLanguageFromFilename('myFile.js'); // language will be "JavaScript"
+----
+
+
+=== formatDate(dateString)
+
+[source,javascript]
+----
+formatDate(dateString) {
+  return new Date(dateString).toISOString().split('T')[0];
+}
+----
+
+*Purpose*: Formats an ISO 8601 date string into a YYYY-MM-DD format.
+
+*Parameters*:
+
+* `dateString` - {string} An ISO 8601 date string (e.g., "2025-05-27T12:00:00Z").
+
+*Return Value*: {string} The formatted date string (e.g., "2025-05-27").
+
+*Exceptions*:  Potentially throws an error if `dateString` is not a valid date format.
+
+*Usage Example*:
+
+[source,javascript]
+----
+const formattedDate = promptGenerator.formatDate('2025-05-27T12:00:00Z'); // formattedDate will be "2025-05-27"
+----
+
+
+=== createDocsPrompt(filename, fileContent, prDetails, language)
+
+[source,javascript]
+----
+createDocsPrompt(filename, fileContent, prDetails, language = 'en') {
+  // ... (Implementation details omitted for brevity)
+}
+----
+
+*Purpose*: Generates a prompt for creating new documentation for a given file.
+
+*Parameters*:
+
+* `filename` - {string} The name of the file.
+* `fileContent` - {string} The content of the file.
+* `prDetails` - {object} An object containing pull request details (number, author, createdAt, updatedAt, mergedBy).
+* `language` - {string} The language of the documentation ('en' or 'ko').
+
+*Return Value*: {string} The formatted prompt string.
+
+*Exceptions*: None explicitly defined.
+
+
+=== createUpdateDocsPrompt(filename, fileContent, existingDocContent, prDetails, language)
+
+[source,javascript]
+----
+createUpdateDocsPrompt(filename, fileContent, existingDocContent, prDetails, language = 'en') {
+  // ... (Implementation details omitted for brevity)
+}
+----
+
+*Purpose*: Generates a prompt for updating existing documentation for a given file.
+
+*Parameters*:
+
+* `filename` - {string} The name of the file.
+* `fileContent` - {string} The current content of the file.
+* `existingDocContent` - {string} The existing documentation content.
+* `prDetails` - {object} An object containing pull request details (number, author, createdAt, updatedAt, mergedBy).
+* `language` - {string} The language of the documentation ('en' or 'ko').
+
+*Return Value*: {string} The formatted prompt string.
+
+*Exceptions*: None explicitly defined.
+
+
+=== getTemplate(language, type, codeLanguage)
+
+[source,javascript]
+----
+getTemplate(language, type, codeLanguage) {
+  // ... (Implementation details omitted for brevity)
+}
+----
+
+*Purpose*: Retrieves the appropriate template string based on the specified language, type (create/update), and programming language.
+
+*Parameters*:
+
+* `language` - {string} The language of the template ('en' or 'ko').
+* `type` - {string} The type of template ('create' or 'update').
+* `codeLanguage` - {string} The programming language of the code.
+
+*Return Value*: {string} The template string.
+
+*Exceptions*: None explicitly defined.
+
+
+=== getSystemPrompt(language)
+
+[source,javascript]
+----
+getSystemPrompt(language = 'en') {
+  // ... (Implementation details omitted for brevity)
+}
+----
+
+*Purpose*: Retrieves the system prompt template for the specified language.  This template provides instructions to the LLM on how to generate the documentation.
+
+*Parameters*:
+
+* `language` - {string} The language of the system prompt ('en' or 'ko').
+
+*Return Value*: {string} The system prompt template string.
+
+*Exceptions*: None explicitly defined.
+
+
+=== getAsciiDocTemplate()
+
+[source,javascript]
+----
+getAsciiDocTemplate() {
+  // ... (Implementation details omitted for brevity)
+}
+----
+
+*Purpose*: Returns a template string representing the desired AsciiDoc structure for the documentation.
+
+*Parameters*: None
+
+*Return Value*: {string} The AsciiDoc template string.
+
+*Exceptions*: None explicitly defined.
+
+
+== Important Notes
+
+* The `config` module's contents are not clear from the provided code and should be documented separately.
+* Error handling is minimal in the provided code.  More robust error handling should be added to handle invalid inputs and potential issues during date parsing.
+* The class relies heavily on the availability of appropriate templates.  The management and maintenance of these templates should be considered.
+

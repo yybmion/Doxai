@@ -1,0 +1,90 @@
+= getAgoraTitle.ts
+:toc:
+:source-highlighter: highlight.js
+
+== Overview
+
+The `getAgoraTitle.ts` file contains a TypeScript function that fetches and returns the title, status, image URL, and color information for a specific Agora item from a server API.  It's used as a data fetching function likely within a React application using `react-query` to manage asynchronous data.
+
+[cols="1,3"]
+|===
+|PR Number|#42
+|Author|@{yybmion}
+|Created Date|2025-05-27
+|Last Modified|2025-05-27 by @{yybmion}
+|===
+
+== Detailed Description
+
+This file exports a single function, `getAgoraTitle`, which acts as a query function for `react-query`.  Given an Agora ID, it makes a fetch request to a backend API endpoint (`/api/v1/open/agoras/${agoraId}/title`) to retrieve details about that Agora. The function handles various response scenarios, including network errors and specific error codes from the API (1301 for non-existent Agora, 503 for offline status).  Successful responses are parsed and returned as an object containing the Agora's title, status, image URL, and color.  Error handling throws descriptive error messages based on the API response. The purpose of the `getSelectedAgoraTags` function is not clear from the code.
+
+== Main Use Cases
+
+[source,javascript]
+----
+import { getAgoraTitle } from './getAgoraTitle';
+import { useQuery } from '@tanstack/react-query';
+
+const fetchAgoraData = () => {
+  const { data, isLoading, error } = useQuery(['agoraData', '123'], getAgoraTitle); // Replace '123' with the actual Agora ID
+
+  if (isLoading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error.message}</p>;
+
+  return (
+    <div>
+      <h1>{data.title}</h1>
+      <img src={data.imageUrl} alt={data.title} />
+    </div>
+  );
+};
+----
+
+== Dependencies
+
+* `@tanstack/react-query` -  A library for fetching, caching, and updating asynchronous data in React applications.  `getAgoraTitle` is designed to be used as a query function within this library.
+* `'@/constants/queryKey'` - This module likely defines constants related to query keys used by `react-query`.  Specifically, `getSelectedAgoraTags` is imported from here.
+* `'@/lib/fetchWrapper'` - A custom wrapper function for making fetch requests, likely providing additional functionality like error handling or request configuration.
+* `'@/constants/responseErrorMessage'` - Contains constants defining error messages returned by the API.
+* `'@/app/model/Agora'` - Defines the `Status` type used for the Agora's status.
+
+
+== Key Methods
+
+=== getAgoraTitle({queryKey: [string, string]})
+
+[source,typescript]
+----
+const getAgoraTitle: QueryFunction<
+    { title: string; status: Status | ''; imageUrl: string; agoraColor: string },
+    [_1: string, _2: string]
+> = async ({ queryKey }) => {
+  const [_, agoraId] = queryKey;
+  // ... (rest of the function)
+};
+----
+
+*Purpose*: Fetches title, status, image URL, and color information for a given Agora ID from the server API.
+
+*Parameters*:
+
+* `{queryKey}` - An array containing two strings. The second element (`_2`) is the Agora ID.
+
+*Return Value*: A Promise that resolves to an object containing `title` (string), `status` (`Status` or empty string), `imageUrl` (string), and `agoraColor` (string), representing the Agora's data.  Rejects with an Error object if the fetch request fails or the API returns an error.
+
+*Exceptions*:
+
+* `Error(AGORA_INFO.UNKNOWN_ERROR)` - Thrown when the API response indicates an unknown error and doesn't provide an error code.
+* `Error(AGORA_INFO.NOT_EXIST_AGORA)` - Thrown when the API returns error code 1301, indicating the Agora does not exist.
+* `Error(NETWORK_ERROR_MESSAGE.OFFLINE)` - Thrown when the API returns error code 503, indicating a network error.
+* `Error(AGORA_INFO.FAILED_TO_GET_AGORA_INFO)` - Thrown when the API response is not successful and doesn't match any of the specific error codes.
+
+
+*Usage Example*:  (See Main Use Cases section)
+
+== Important Notes
+
+* The function relies on a custom `callFetchWrapper` for making API requests.  Understanding its behavior is crucial for debugging network issues.
+* Error handling is based on specific API error codes.  Adding more robust error handling or logging might be beneficial.
+* The `getSelectedAgoraTags` function's purpose and usage are unclear from the provided code.  Further investigation is needed.
+
