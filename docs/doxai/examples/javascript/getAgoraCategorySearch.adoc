@@ -1,0 +1,99 @@
+```asciidoc
+= examples/javascript/getAgoraCategorySearch.ts
+:toc:
+:source-highlighter: highlight.js
+
+== Overview
+
+`getAgoraCategorySearch` 함수는 아고라(Agora) 카테고리 검색 결과를 가져오는 역할을 한다.  React Query의 `QueryFunction`으로 사용되어,  특정 조건에 맞는 아고라 목록과 다음 페이지 여부를 반환한다. 시스템 내에서는 아고라 목록을 비동기적으로 가져오는 데 사용된다.
+
+[cols="1,3"]
+|===
+|PR Number|#42
+|Author|yybmion
+|Created Date|2025-05-27
+|Last Modified|2025-05-27 by yybmion
+|===
+
+== Detailed Description
+
+이 함수는 `/api/v1/open/agoras` API 엔드포인트를 호출하여 아고라 목록을 가져온다.  `SearchParams` 인터페이스를 통해 검색 조건(상태, 카테고리)을 지정할 수 있으며, `pageParam`을 통해 페이징 처리를 지원한다.  API 호출 결과는 `res` 객체에 담기며, 성공적인 응답인 경우 `agoras` 배열(아고라 목록)과 `nextCursor`(다음 페이지 커서)를 반환한다.  에러 발생 시에는 에러 코드에 따라 다양한 에러 메시지를 던진다.  에러 처리 로직은 API 응답의 `ok`, `success`, `error` 속성을 기반으로 한다.  `callFetchWrapper` 함수를 사용하여 API를 호출하며,  헤더 정보와 인증 정보(`credentials: 'include'`)를 포함한다.
+
+
+== Main Use Cases
+
+아고라 목록을 카테고리와 상태별로 검색하고 페이징 처리하여 표시하는 경우에 사용된다. 예를 들어, 특정 카테고리의 활성화된 아고라 목록을 페이지별로 가져와서 화면에 보여주는 기능에 사용할 수 있다.
+
+
+[source,javascript]
+----
+import { useQuery } from '@tanstack/react-query';
+import { getAgoraCategorySearch } from './getAgoraCategorySearch';
+
+const searchParams = { status: 'active', category: '1' };
+
+const { data, isLoading, error } = useQuery(
+  ['agoras', 'search', 'category', searchParams],
+  getAgoraCategorySearch,
+  {
+    getNextPageParam: (lastPage) => (lastPage.nextCursor ? { nextCursor: lastPage.nextCursor } : undefined),
+  }
+);
+
+if (isLoading) {
+  // 로딩 중...
+} else if (error) {
+  // 에러 처리
+} else {
+  // data.agoras 에 아고라 목록이 담겨있음
+}
+----
+
+== Dependencies
+
+* `@/app/model/Agora` - 아고라 데이터 모델을 정의하는 모듈.  `UnionAgora` 타입을 가져온다.
+* `@/constants/responseErrorMessage` - API 응답 에러 메시지를 정의하는 상수 모듈.  `AGORA_CATEGORY_SEARCH`, `NETWORK_ERROR_MESSAGE`를 가져온다.
+* `@/lib/fetchWrapper` - API 호출을 위한 래퍼 함수를 제공하는 모듈. `callFetchWrapper` 함수를 사용한다.
+* `@tanstack/react-query` - React Query 라이브러리. `QueryFunction` 타입을 가져온다.
+
+
+== Key Methods
+
+=== getAgoraCategorySearch(queryKey: string[], pageParam: { nextCursor: number | null })
+
+[source,typescript]
+----
+async ({ queryKey, pageParam = { nextCursor: null } }) => {
+  // ... (함수 본문 생략)
+};
+----
+
+*Purpose*:  지정된 검색 조건과 페이지 매개변수를 사용하여 아고라 목록을 가져온다.
+
+*Parameters*:
+
+* `queryKey`: React Query의 query key. 검색 조건을 포함한다.
+* `pageParam`: 페이지 매개변수. `nextCursor`를 포함하며, 다음 페이지를 가져올 때 사용된다.
+
+*Return Value*:  `{ agoras: UnionAgora[]; nextCursor: number | null }` 타입의 객체.  `agoras`는 아고라 목록 배열이고, `nextCursor`는 다음 페이지 커서(다음 페이지가 있으면 값이 있고, 없으면 null)이다.
+
+*Exceptions*:
+
+* `Error(AGORA_CATEGORY_SEARCH.UNKNOWN_ERROR)` - 알 수 없는 에러 발생 시.
+* `Error(AGORA_CATEGORY_SEARCH.NOT_ALLOWED_STATUS)` - 허용되지 않은 상태(status)일 때.
+* `Error(AGORA_CATEGORY_SEARCH.NOT_ALLOWED_CATEGORY)` - 허용되지 않은 카테고리(category)일 때.
+* `Error(res.error.message)` - API에서 에러 코드 -1을 반환했을 때.
+* `Error(NETWORK_ERROR_MESSAGE.OFFLINE)` - 네트워크 오류(에러 코드 503) 발생 시.
+* `Error(AGORA_CATEGORY_SEARCH.FAILED_TO_GET_AGORA_LIST)` - 아고라 목록 가져오기 실패 시.
+
+
+*Usage Example*: (위 Main Use Cases 참조)
+
+== Important Notes
+
+* API 응답의 `ok`와 `success` 속성을 모두 확인하여 응답의 성공 여부를 판단한다.  둘 다 true여야 성공적인 응답으로 간주한다.
+* 에러 처리 로직은 API 응답의 `error` 객체의 `code` 속성을 기반으로 한다.  각 에러 코드에 대한 자세한 내용은 `@/constants/responseErrorMessage` 모듈을 참조한다.
+* `callFetchWrapper` 함수의 동작 방식에 대한 자세한 내용은 해당 모듈의 문서를 참조한다.
+*  주석 처리된 `return { agoras: [], nextCursor: null };` 부분은 에러 발생 시 빈 배열을 반환하는 대신 에러를 던지도록 변경되었다. 이 부분의 의도는 코드에서 명확하지 않다.
+
+```
