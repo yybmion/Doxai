@@ -1,0 +1,91 @@
+```asciidoc
+= PriorityQueue Class
+
+== PR Information
+
+* PR Number: 33
+* Author: yybmion
+* Created Date: 2025-05-27
+* Last Modified: 2025-05-27 by yybmion
+
+== File Information
+
+* Filename: examples/javascript/algorithms/priorityQueue.js
+* Language: JavaScript
+
+== Description
+
+This JavaScript class `PriorityQueue` implements a priority queue data structure based on a min heap.  It extends the `MinHeap` class and uses a `Comparator` for comparing elements based on their priority.  The priority of each item is stored in a separate `Map`.  The exact implementation details of `MinHeap` and `Comparator` are assumed to be defined elsewhere and are not fully documented here.
+
+== Dependencies
+
+* `MinHeap`:  An assumed class providing min-heap functionality.  The specific implementation is unknown.
+* `Comparator`: An assumed class providing comparison functionality. The specific implementation is unknown.
+
+== Class Methods
+
+=== Constructor
+
+`constructor()`
+
+Initializes a new `PriorityQueue` instance. Calls the `MinHeap` constructor, initializes a `priorities` map to store item priorities, and sets up a custom comparator (`compare`) that uses the `comparePriority` method.
+
+=== `add(item, priority = 0)`
+
+Adds an item to the priority queue with an optional priority. If no priority is provided, it defaults to 0.  Updates the `priorities` map and adds the item to the heap using the `super.add()` method.
+
+* `item`: The item to add.  Type is unknown.
+* `priority`: The priority of the item (number). Defaults to 0.
+* Returns: The `PriorityQueue` instance.
+
+=== `remove(item, customFindingComparator)`
+
+Removes an item from the priority queue.  Removes the item from the heap using `super.remove()` and updates the `priorities` map.  The exact behavior of `customFindingComparator` is unclear without further documentation on the `super.remove()` method.
+
+* `item`: The item to remove. Type is unknown.
+* `customFindingComparator`: (Optional) A custom comparator for finding the item to remove.  Functionality is unclear without further context.
+* Returns: The `PriorityQueue` instance.
+
+=== `changePriority(item, priority)`
+
+Changes the priority of an existing item in the queue.  It removes the item using a comparator that compares values (`compareValue`), then adds it back with the new priority.
+
+* `item`: The item to re-prioritize. Type is unknown.
+* `priority`: The new priority of the item (number).
+* Returns: The `PriorityQueue` instance.
+
+=== `findByValue(item)`
+
+Finds an item in the queue based on its value. The return type and behavior are unclear without further context on the underlying `find` method.
+
+* `item`: The item to find. Type is unknown.
+* Returns:  `Number[]`.  The meaning of this return type is unclear.
+
+=== `hasValue(item)`
+
+Checks if an item exists in the queue based on its value.
+
+* `item`: The item to check. Type is unknown.
+* Returns: `boolean` - `true` if the item exists, `false` otherwise.
+
+=== `comparePriority(a, b)`
+
+Compares the priorities of two items using the `priorities` map.
+
+* `a`: The first item. Type is unknown.
+* `b`: The second item. Type is unknown.
+* Returns: `number` - -1 if `a` has lower priority, 1 if `a` has higher priority, 0 if priorities are equal.
+
+=== `compareValue(a, b)`
+
+Compares the values of two items.
+
+* `a`: The first item. Type is unknown.
+* `b`: The second item. Type is unknown.
+* Returns: `number` - -1 if `a` is less than `b`, 1 if `a` is greater than `b`, 0 if `a` and `b` are equal.
+
+
+== Notes
+
+The code relies heavily on the `MinHeap` and `Comparator` classes, whose implementations are not provided.  The exact behavior of some methods (`findByValue`, `remove`, `find`) is unclear without further documentation of these dependent classes.  The type of items stored in the priority queue is also not specified.
+```
