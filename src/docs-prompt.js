@@ -128,8 +128,18 @@ class DocsPromptGenerator {
 \${fileContent}
 \`\`\`
 
+## 핵심 원칙: 자연스러운 문체
+
+### 문체 가이드
+- "~를 구현합니다", "~을 제공합니다" 같은 딱딱한 표현 대신 "~를 만든다", "~를 제공한다" 사용
+- 전문 용어는 쉬운 말로 풀어서 설명
+
+### 좋은 문장 예시
+- ❌ "이 클래스는 레드-블랙 트리 자료구조를 구현하여 균형 잡힌 이진 탐색 트리 기능을 제공합니다"
+- ✅ "데이터를 빠르게 찾고 저장할 수 있는 레드-블랙 트리를 구현한다. 데이터가 한쪽으로 치우치지 않도록 자동으로 균형을 맞춘다"
+
 ## 중요한 요청사항
-1. **반드시 한국어로 문서를 작성해주세요.**
+1. **자연스럽고 읽기 쉬운 한국어로 작성하세요**
 2. 위 코드를 철저히 분석하여 AsciiDoc 형식의 개발자 문서를 생성해주세요.
 3. 문서는 개발자가 이 코드를 이해하고 사용하는 데 필요한 모든 정보를 포함해야 합니다.
 4. 클래스/파일의 주요 기능, 메소드, 의존성 등을 명확하게 설명해주세요.
@@ -140,7 +150,7 @@ class DocsPromptGenerator {
 
         update: `# 코드 문서 업데이트 요청
 
-다음 ${codeLanguage} 파일이 변경되었습니다. 기존 문서를 **한국어로** 업데이트해주세요.
+다음 ${codeLanguage} PR이 변경되었습니다. 기존 문서를 **자연스러운 한국어로** 업데이트해주세요.
 
 ## PR 정보
 - PR 번호: \${prNumber}
@@ -192,8 +202,18 @@ Please analyze the following ${codeLanguage} file and generate technical documen
 \${fileContent}
 \`\`\`
 
+### Writing Style
+- **Use clear, natural, and conversational English**
+- Explain complex technical terms in simple language
+- Write as if explaining to a colleague who's seeing this code for the first time
+
+### Example Style
+❌ Poor: "The RedBlackTree class implements a red-black tree based on binary search tree. Red-black tree is a kind of balanced binary search tree that..."
+
+✅ Good: "This class creates a red-black tree that helps you store and find data quickly. Unlike regular trees, it automatically keeps itself balanced so lookups stay fast even as you add more data."
+
 ## Requirements
-1. **Generate documentation in English.**
+1. **Write in clear, natural English that's easy to understand**
 2. Thoroughly analyze the above code and generate developer documentation in AsciiDoc format.
 3. The documentation should include all necessary information for developers to understand and use this code.
 4. Clearly explain the main functionality, methods, and dependencies of the class/file.
@@ -248,7 +268,17 @@ The following ${codeLanguage} file has been modified. Please update the existing
    */
   getSystemPrompt(language = 'en') {
     const prompts = {
-      ko: `당신은 코드 문서화 전문가입니다. 제공된 코드 파일을 철저히 분석하여 **한국어로** AsciiDoc 형식의 정확하고 유용한 문서를 생성해야 합니다.
+      ko: `당신은 코드 문서화 전문가입니다. 제공된 코드 파일을 철저히 분석하여 **자연스럽고 이해하기 쉬운 한국어로** AsciiDoc 형식의 정확하고 유용한 문서를 생성해야 합니다.
+
+## 핵심 원칙: 자연스러운 문체
+
+### 문체 가이드
+- "~를 구현합니다", "~을 제공합니다" 같은 딱딱한 표현 대신 "~를 만든다", "~를 제공한다" 사용
+- 전문 용어는 쉬운 말로 풀어서 설명
+
+### 좋은 문장 예시
+- ❌ "이 클래스는 레드-블랙 트리 자료구조를 구현하여 균형 잡힌 이진 탐색 트리 기능을 제공합니다"
+- ✅ "데이터를 빠르게 찾고 저장할 수 있는 레드-블랙 트리를 구현한다. 데이터가 한쪽으로 치우치지 않도록 자동으로 균형을 맞춘다"
 
 ## 중요: 언어 요구사항
 - **모든 문서는 반드시 한국어로 작성해야 합니다.**
@@ -279,6 +309,16 @@ The following ${codeLanguage} file has been modified. Please update the existing
 ${this.getAsciiDocTemplate()}`,
 
       en: `You are a code documentation expert. You need to thoroughly analyze the provided code file and generate precise and useful documentation **in English** in AsciiDoc format.
+
+### Writing Style
+- **Use clear, natural, and conversational English**
+- Explain complex technical terms in simple language
+- Write as if explaining to a colleague who's seeing this code for the first time
+
+### Example Style
+❌ Poor: "The RedBlackTree class implements a red-black tree based on binary search tree. Red-black tree is a kind of balanced binary search tree that..."
+
+✅ Good: "This class creates a red-black tree that helps you store and find data quickly. Unlike regular trees, it automatically keeps itself balanced so lookups stay fast even as you add more data."
 
 ## Important: Language Requirements
 - **All documentation must be written in English.**
