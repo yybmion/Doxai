@@ -160,20 +160,6 @@ ai-model: 'claude-3-opus'  # 또는 claude-3-sonnet, claude-3-haiku
 - 맥락 인식 문서화
 </details>
 
-<details>
-<summary><strong>Azure OpenAI</strong></summary>
-
-```yaml
-ai-provider: 'azure'
-ai-model: 'your-deployment-name'
-env:
-  AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
-```
-- 엔터프라이즈급 보안
-- 사용자 정의 배포
-- 지역별 규정 준수
-</details>
-
 ## 📁 지원하는 파일 형식
 
 ### 프로그래밍 언어
