@@ -1,0 +1,297 @@
+= BinaryTreeNode
+:toc:
+:source-highlighter: highlight.js
+
+== Overview
+
+The `BinaryTreeNode` class represents a node in a binary tree data structure. It provides methods for manipulating the node's value, children (left and right), and parent, as well as calculating properties like height and balance factor.  It plays a crucial role in building and managing binary trees.
+
+[cols="1,3"]
+|===
+|PR Number|#36
+|Author|@{yybmion}
+|Created Date|2025-05-27
+|Last Modified|2025-05-27 by @{yybmion}
+|===
+
+== Detailed Description
+
+The `BinaryTreeNode` class is a fundamental building block for implementing binary trees. Each instance of this class holds a value and references to its left and right children, and its parent node.  It also includes a `HashTable` for storing node-specific metadata and a `Comparator` for comparing nodes based on their values.  The class provides methods for setting and getting node values, adding and removing children, calculating the height and balance factor of the node, and traversing the tree in-order.  The `uncle` getter method is particularly useful for tree balancing algorithms.  The `copyNode` static method allows for efficient duplication of nodes.
+
+The design prioritizes clear and efficient manipulation of the tree structure, facilitating the implementation of various binary tree algorithms. The use of a `Comparator` allows for flexibility in defining how nodes are compared. The inclusion of a `HashTable` for metadata provides extensibility for adding custom information to each node.
+
+== Main Use Cases
+
+[source,javascript]
+----
+const node = new BinaryTreeNode(10);
+node.setLeft(new BinaryTreeNode(5));
+node.setRight(new BinaryTreeNode(15));
+console.log(node.traverseInOrder()); // Output: [5, 10, 15]
+----
+
+== Dependencies
+
+* `Comparator` from `../../utils/comparator/Comparator` - Provides comparison functionality for node values.  This is used to compare nodes when determining relationships (e.g., parent, child, uncle) and during tree traversal.
+* `HashTable` from `../hash-table/HashTable` -  Provides a mechanism to store arbitrary metadata associated with each node.  This allows for attaching additional information to nodes without modifying the core `BinaryTreeNode` class.
+
+
+== Key Methods
+
+=== setValue(value)
+
+[source,javascript]
+----
+setValue(value) {
+  this.value = value;
+  return this;
+}
+----
+
+*Purpose*: Sets the value of the node.
+
+*Parameters*:
+
+* `value` - {* } The new value for the node.
+
+*Return Value*: {BinaryTreeNode} The current node instance.
+
+*Exceptions*: None.
+
+*Usage Example*:
+
+[source,javascript]
+----
+node.setValue(20);
+----
+
+=== setLeft(node)
+
+[source,javascript]
+----
+setLeft(node) {
+  if (this.left) {
+    this.left.parent = null;
+  }
+  this.left = node;
+  if (this.left) {
+    this.left.parent = this;
+  }
+  return this;
+}
+----
+
+*Purpose*: Sets the left child of the node.  Handles detaching any existing left child before attaching the new one.
+
+*Parameters*:
+
+* `node` - {BinaryTreeNode} The new left child node.
+
+*Return Value*: {BinaryTreeNode} The current node instance.
+
+*Exceptions*: None.
+
+*Usage Example*:
+
+[source,javascript]
+----
+node.setLeft(new BinaryTreeNode(7));
+----
+
+=== setRight(node)
+
+[source,javascript]
+----
+setRight(node) {
+    if (this.right) {
+      this.right.parent = null;
+    }
+    this.right = node;
+    if (node) {
+      this.right.parent = this;
+    }
+    return this;
+  }
+----
+
+*Purpose*: Sets the right child of the node. Handles detaching any existing right child before attaching the new one.
+
+*Parameters*:
+
+* `node` - {BinaryTreeNode} The new right child node.
+
+*Return Value*: {BinaryTreeNode} The current node instance.
+
+*Exceptions*: None.
+
+*Usage Example*:
+
+[source,javascript]
+----
+node.setRight(new BinaryTreeNode(12));
+----
+
+=== removeChild(nodeToRemove)
+
+[source,javascript]
+----
+removeChild(nodeToRemove) {
+  if (this.left && this.nodeComparator.equal(this.left, nodeToRemove)) {
+    this.left = null;
+    return true;
+  }
+  if (this.right && this.nodeComparator.equal(this.right, nodeToRemove)) {
+    this.right = null;
+    return true;
+  }
+  return false;
+}
+----
+
+*Purpose*: Removes a child node from the current node.
+
+*Parameters*:
+
+* `nodeToRemove` - {BinaryTreeNode} The node to remove.
+
+*Return Value*: {boolean} `true` if the node was removed, `false` otherwise.
+
+*Exceptions*: None.
+
+*Usage Example*:
+
+[source,javascript]
+----
+node.removeChild(node.left);
+----
+
+=== replaceChild(nodeToReplace, replacementNode)
+
+[source,javascript]
+----
+replaceChild(nodeToReplace, replacementNode) {
+  if (!nodeToReplace || !replacementNode) {
+    return false;
+  }
+  if (this.left && this.nodeComparator.equal(this.left, nodeToReplace)) {
+    this.left = replacementNode;
+    return true;
+  }
+  if (this.right && this.nodeComparator.equal(this.right, nodeToReplace)) {
+    this.right = replacementNode;
+    return true;
+  }
+  return false;
+}
+----
+
+*Purpose*: Replaces one child node with another.
+
+*Parameters*:
+
+* `nodeToReplace` - {BinaryTreeNode} The node to be replaced.
+* `replacementNode` - {BinaryTreeNode} The replacement node.
+
+*Return Value*: {boolean} `true` if the replacement was successful, `false` otherwise.
+
+*Exceptions*: None.
+
+*Usage Example*:
+
+[source,javascript]
+----
+node.replaceChild(node.left, new BinaryTreeNode(8));
+----
+
+=== copyNode(sourceNode, targetNode)
+
+[source,javascript]
+----
+copyNode(sourceNode, targetNode) {
+  targetNode.setValue(sourceNode.value);
+  targetNode.setLeft(sourceNode.left);
+  targetNode.setRight(sourceNode.right);
+}
+----
+
+*Purpose*: Copies the value and children of one node to another.  This is a static method.
+
+*Parameters*:
+
+* `sourceNode` - {BinaryTreeNode} The node to copy from.
+* `targetNode` - {BinaryTreeNode} The node to copy to.
+
+*Return Value*: {void}
+
+*Exceptions*: None.
+
+*Usage Example*:
+
+[source,javascript]
+----
+const newNode = new BinaryTreeNode();
+BinaryTreeNode.copyNode(node, newNode);
+----
+
+=== traverseInOrder()
+
+[source,javascript]
+----
+traverseInOrder() {
+  let traverse = [];
+  if (this.left) {
+    traverse = traverse.concat(this.left.traverseInOrder());
+  }
+  traverse.push(this.value);
+  if (this.right) {
+    traverse = traverse.concat(this.right.traverseInOrder());
+  }
+  return traverse;
+}
+----
+
+*Purpose*: Performs an in-order traversal of the subtree rooted at this node.
+
+*Parameters*: None.
+
+*Return Value*: {*[]} An array containing the values of the nodes in in-order traversal sequence.
+
+*Exceptions*: None.
+
+*Usage Example*:
+
+[source,javascript]
+----
+const traversal = node.traverseInOrder();
+----
+
+=== toString()
+
+[source,javascript]
+----
+toString() {
+  return this.traverseInOrder().toString();
+}
+----
+
+*Purpose*: Returns a string representation of the node's in-order traversal.
+
+*Parameters*: None.
+
+*Return Value*: {string} A string representation of the node's values.
+
+*Exceptions*: None.
+
+*Usage Example*:
+
+[source,javascript]
+----
+console.log(node.toString());
+----
+
+== Important Notes
+
+* The `Comparator` used by the `BinaryTreeNode` should be consistent throughout the tree for correct functionality.
+* The `meta` HashTable is intended for user-defined metadata and its usage is not directly managed by the `BinaryTreeNode` class.
+*  The `uncle` property might return `undefined` if the node doesn't have a grandparent or the grandparent doesn't have two children.
+
