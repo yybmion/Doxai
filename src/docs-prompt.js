@@ -131,7 +131,6 @@ class DocsPromptGenerator {
 ## 핵심 원칙: 자연스러운 문체
 
 ### 문체 가이드
-- "~를 구현합니다", "~을 제공합니다" 같은 딱딱한 표현 대신 "~를 만든다", "~를 제공한다" 사용
 - 전문 용어는 쉬운 말로 풀어서 설명
 
 ### 좋은 문장 예시
@@ -146,7 +145,7 @@ class DocsPromptGenerator {
 5. 시스템 프롬프트에서 제공한 AsciiDoc 템플릿 형식을 정확히 따라주세요.
 6. 코드에서 명확하지 않은 부분은 추측하지 말고, 문서에 이를 명시해주세요.
 7. **모든 설명과 주석은 반드시 한국어로 작성해주세요.**
-8. AsciiDoc 문서만 반환해주세요. 추가 설명은 필요 없습니다.`,
+8. **코드블럭(\`\`\`) 없이 순수한 AsciiDoc 문서만 반환하세요**. 추가 설명은 필요 없습니다.`,
 
         update: `# 코드 문서 업데이트 요청
 
@@ -179,7 +178,7 @@ class DocsPromptGenerator {
 4. 기존 문서의 형식과 스타일을 유지해주세요.
 5. PR 정보 섹션을 최신 정보로 업데이트해주세요.
 6. **모든 설명과 주석은 반드시 한국어로 작성해주세요.**
-7. 업데이트된 전체 AsciiDoc 문서를 반환해주세요.`
+7. 업데이트된 전체 AsciiDoc(코드블럭(\`\`\`) 없는) 문서를 반환해주세요.`
       },
 
       en: {
@@ -203,7 +202,6 @@ Please analyze the following ${codeLanguage} file and generate technical documen
 \`\`\`
 
 ### Writing Style
-- **Use clear, natural, and conversational English**
 - Explain complex technical terms in simple language
 - Write as if explaining to a colleague who's seeing this code for the first time
 
@@ -220,7 +218,7 @@ Please analyze the following ${codeLanguage} file and generate technical documen
 5. Follow the AsciiDoc template format provided in the system prompt exactly.
 6. Do not make assumptions about unclear parts; indicate these in the documentation.
 7. **All descriptions and comments must be written in English.**
-8. Return only the AsciiDoc document without additional explanations.`,
+8. **Return pure AsciiDoc content without code blocks (\`\`\`)** without additional explanations.`,
 
         update: `# Documentation Update Request
 
@@ -253,7 +251,7 @@ The following ${codeLanguage} file has been modified. Please update the existing
 4. Maintain the existing document's format and style.
 5. Update the PR information section with the latest details.
 6. **All descriptions and comments must be written in English.**
-7. Return the complete updated AsciiDoc document.`
+7. Return the complete updated AsciiDoc(Return pure AsciiDoc content without code blocks (\`\`\`)) document.`
       }
     };
 
@@ -273,7 +271,6 @@ The following ${codeLanguage} file has been modified. Please update the existing
 ## 핵심 원칙: 자연스러운 문체
 
 ### 문체 가이드
-- "~를 구현합니다", "~을 제공합니다" 같은 딱딱한 표현 대신 "~를 만든다", "~를 제공한다" 사용
 - 전문 용어는 쉬운 말로 풀어서 설명
 
 ### 좋은 문장 예시
@@ -281,6 +278,7 @@ The following ${codeLanguage} file has been modified. Please update the existing
 - ✅ "데이터를 빠르게 찾고 저장할 수 있는 레드-블랙 트리를 구현한다. 데이터가 한쪽으로 치우치지 않도록 자동으로 균형을 맞춘다"
 
 ## 중요: 언어 요구사항
+- **코드블럭(\`\`\`) 없이 순수한 AsciiDoc 문서만 반환하세요**.
 - **모든 문서는 반드시 한국어로 작성해야 합니다.**
 - 기술 용어는 한국어로 번역하되, 필요시 영어 원문을 괄호 안에 병기할 수 있습니다.
 - 예: "연결 리스트(Linked List)", "해시 테이블(Hash Table)"
@@ -311,7 +309,6 @@ ${this.getAsciiDocTemplate()}`,
       en: `You are a code documentation expert. You need to thoroughly analyze the provided code file and generate precise and useful documentation **in English** in AsciiDoc format.
 
 ### Writing Style
-- **Use clear, natural, and conversational English**
 - Explain complex technical terms in simple language
 - Write as if explaining to a colleague who's seeing this code for the first time
 
@@ -321,6 +318,7 @@ ${this.getAsciiDocTemplate()}`,
 ✅ Good: "This class creates a red-black tree that helps you store and find data quickly. Unlike regular trees, it automatically keeps itself balanced so lookups stay fast even as you add more data."
 
 ## Important: Language Requirements
+- Return pure AsciiDoc content without code blocks (\`\`\`)
 - **All documentation must be written in English.**
 - Use clear, professional English throughout the document.
 - Technical terms should be explained clearly for international developers.

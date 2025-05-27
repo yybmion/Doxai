@@ -35,14 +35,6 @@ class Config {
           'Content-Type': 'application/json',
           'x-goog-api-key': apiKey
         })
-      },
-      azure: {
-        endpoint: process.env.AZURE_OPENAI_ENDPOINT,
-        models: ['gpt-4', 'gpt-35-turbo'],
-        headers: (apiKey) => ({
-          'Content-Type': 'application/json',
-          'api-key': apiKey
-        })
       }
     };
 
@@ -101,11 +93,6 @@ class Config {
     // Validate AI provider
     if (!this.aiProviderConfig[this.aiProvider]) {
       throw new Error(`Unsupported AI provider: ${this.aiProvider}. Supported providers: ${Object.keys(this.aiProviderConfig).join(', ')}`);
-    }
-
-    // Validate Azure endpoint if using Azure
-    if (this.aiProvider === 'azure' && !this.aiProviderConfig.azure.endpoint) {
-      throw new Error('AZURE_OPENAI_ENDPOINT environment variable is required for Azure provider');
     }
 
     // Validate language

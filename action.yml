@@ -9,7 +9,7 @@ inputs:
     default: ${{ github.token }}
 
   ai-provider:
-    description: 'AI provider (openai, anthropic, google, azure)'
+    description: 'AI provider (openai, anthropic, google)'
     required: false
     default: 'google'
 

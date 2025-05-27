@@ -110,16 +110,6 @@ class AIClient {
           }
         };
 
-      case 'azure':
-        return {
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt }
-          ],
-          temperature,
-          max_tokens: 8192
-        };
-
       default:
         throw new Error(`Unsupported AI provider: ${this.provider}`);
     }
@@ -134,9 +124,8 @@ class AIClient {
     try {
       switch(this.provider) {
         case 'openai':
-        case 'azure':
           if (!response.data?.choices?.[0]?.message?.content) {
-            throw new Error('Invalid response structure from OpenAI/Azure');
+            throw new Error('Invalid response structure from OpenAI');
           }
           return response.data.choices[0].message.content;
 
@@ -265,7 +254,6 @@ class AIClient {
     // Provider-specific error handling
     switch(this.provider) {
       case 'openai':
-      case 'azure':
         return data?.error?.message || JSON.stringify(data);
 
       case 'anthropic':

@@ -160,20 +160,6 @@ ai-model: 'claude-3-opus'  # or claude-3-sonnet, claude-3-haiku
 - Context-aware documentation
 </details>
 
-<details>
-<summary><strong>Azure OpenAI</strong></summary>
-
-```yaml
-ai-provider: 'azure'
-ai-model: 'your-deployment-name'
-env:
-  AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
-```
-- Enterprise-grade security
-- Custom deployments
-- Regional compliance
-</details>
-
 ## 📁 Supported File Types
 
 ### Programming Languages
