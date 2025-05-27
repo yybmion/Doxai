@@ -1,0 +1,293 @@
+= BinaryTreeNode
+:toc:
+:source-highlighter: highlight.js
+
+== Overview
+
+The `BinaryTreeNode` is responsible for representing a node in a binary tree data structure. It provides methods for manipulating the node's children, accessing its properties, and traversing the tree.  It plays a fundamental role in building and managing binary trees.
+
+[cols="1,3"]
+|===
+|PR Number|#36
+|Author|@{yybmion}
+|Created Date|2025-05-27
+|Last Modified|2025-05-27 by @{yybmion}
+|===
+
+== Detailed Description
+
+The `BinaryTreeNode` class implements a node within a binary tree. Each node holds a value and can have at most two children: a left child and a right child.  The class includes methods for setting and getting the node's value and children, calculating its height and balance factor, finding its uncle node, and traversing the tree in-order.  It utilizes a `Comparator` for comparing node values and a `HashTable` for storing node-specific metadata.  The design prioritizes clear and efficient manipulation of the tree structure.  The `copyNode` static method allows for creating a deep copy of a node.
+
+== Main Use Cases
+
+[source,javascript]
+----
+// Simple example code using this class/file
+const node = new BinaryTreeNode(10);
+node.setLeft(new BinaryTreeNode(5));
+node.setRight(new BinaryTreeNode(15));
+console.log(node.traverseInOrder()); // Output: [5, 10, 15]
+----
+
+== Dependencies
+
+* `Comparator` from `'../../utils/comparator/Comparator'` - Provides comparison functionality for node values.  Used to compare nodes during tree operations.
+* `HashTable` from `'../hash-table/HashTable'` - Used to store node-specific metadata.  Allows for associating arbitrary key-value pairs with each node.
+
+== Key Methods
+
+=== setLeft({node: BinaryTreeNode})
+
+[source,javascript]
+----
+setLeft(node) {
+    if (this.left) {
+      this.left.parent = null;
+    }
+    this.left = node;
+    if (this.left) {
+      this.left.parent = this;
+    }
+    return this;
+}
+----
+
+*Purpose*: Attaches a new node as the left child of the current node.
+
+*Parameters*:
+
+* `{node}` - {BinaryTreeNode: The node to be set as the left child.}
+
+*Return Value*: {BinaryTreeNode: Returns the current node for method chaining.}
+
+*Exceptions*: None explicitly defined in the code.
+
+*Usage Example*:
+
+[source,javascript]
+----
+const node = new BinaryTreeNode(10);
+node.setLeft(new BinaryTreeNode(5));
+----
+
+=== setRight({node: BinaryTreeNode})
+
+[source,javascript]
+----
+setRight(node) {
+    if (this.right) {
+      this.right.parent = null;
+    }
+    this.right = node;
+    if (node) {
+      this.right.parent = this;
+    }
+    return this;
+}
+----
+
+*Purpose*: Attaches a new node as the right child of the current node.
+
+*Parameters*:
+
+* `{node}` - {BinaryTreeNode: The node to be set as the right child.}
+
+*Return Value*: {BinaryTreeNode: Returns the current node for method chaining.}
+
+*Exceptions*: None explicitly defined in the code.
+
+*Usage Example*:
+
+[source,javascript]
+----
+const node = new BinaryTreeNode(10);
+node.setRight(new BinaryTreeNode(15));
+----
+
+=== removeChild({nodeToRemove: BinaryTreeNode})
+
+[source,javascript]
+----
+removeChild(nodeToRemove) {
+    if (this.left && this.nodeComparator.equal(this.left, nodeToRemove)) {
+      this.left = null;
+      return true;
+    }
+    if (this.right && this.nodeComparator.equal(this.right, nodeToRemove)) {
+      this.right = null;
+      return true;
+    }
+    return false;
+}
+----
+
+*Purpose*: Removes a child node from the current node.
+
+*Parameters*:
+
+* `{nodeToRemove}` - {BinaryTreeNode: The node to be removed.}
+
+*Return Value*: {boolean: True if the node was removed, false otherwise.}
+
+*Exceptions*: None explicitly defined in the code.
+
+*Usage Example*:
+
+[source,javascript]
+----
+const node = new BinaryTreeNode(10);
+node.setLeft(new BinaryTreeNode(5));
+node.removeChild(node.left);
+----
+
+=== replaceChild({nodeToReplace: BinaryTreeNode}, {replacementNode: BinaryTreeNode})
+
+[source,javascript]
+----
+replaceChild(nodeToReplace, replacementNode) {
+    if (!nodeToReplace || !replacementNode) {
+      return false;
+    }
+    if (this.left && this.nodeComparator.equal(this.left, nodeToReplace)) {
+      this.left = replacementNode;
+      return true;
+    }
+    if (this.right && this.nodeComparator.equal(this.right, nodeToReplace)) {
+      this.right = replacementNode;
+      return true;
+    }
+    return false;
+}
+----
+
+*Purpose*: Replaces a child node with another node.
+
+*Parameters*:
+
+* `{nodeToReplace}` - {BinaryTreeNode: The node to be replaced.}
+* `{replacementNode}` - {BinaryTreeNode: The node that will replace the old node.}
+
+*Return Value*: {boolean: True if the node was replaced, false otherwise.}
+
+*Exceptions*: None explicitly defined in the code.
+
+*Usage Example*:
+
+[source,javascript]
+----
+const node = new BinaryTreeNode(10);
+const newNode = new BinaryTreeNode(12);
+node.setLeft(new BinaryTreeNode(5));
+node.replaceChild(node.left, newNode);
+----
+
+=== traverseInOrder()
+
+[source,javascript]
+----
+traverseInOrder() {
+    let traverse = [];
+    if (this.left) {
+      traverse = traverse.concat(this.left.traverseInOrder());
+    }
+    traverse.push(this.value);
+    if (this.right) {
+      traverse = traverse.concat(this.right.traverseInOrder());
+    }
+    return traverse;
+}
+----
+
+*Purpose*: Performs an in-order traversal of the subtree rooted at the current node.
+
+*Parameters*: None
+
+*Return Value*: {Array: An array containing the values of the nodes in the subtree, in in-order sequence.}
+
+*Exceptions*: None explicitly defined in the code.
+
+*Usage Example*:
+
+[source,javascript]
+----
+const node = new BinaryTreeNode(10);
+node.setLeft(new BinaryTreeNode(5));
+node.setRight(new BinaryTreeNode(15));
+console.log(node.traverseInOrder()); // Output: [5, 10, 15]
+----
+
+=== get uncle
+
+[source,javascript]
+----
+get uncle() {
+    if (!this.parent) {
+      return undefined;
+    }
+    if (!this.parent.parent) {
+      return undefined;
+    }
+    if (!this.parent.parent.left || !this.parent.parent.right) {
+      return undefined;
+    }
+    if (this.nodeComparator.equal(this.parent, this.parent.parent.left)) {
+      return this.parent.parent.right;
+    }
+    return this.parent.parent.left;
+}
+----
+
+*Purpose*: Returns the uncle node (parent's sibling) of the current node.
+
+*Parameters*: None
+
+*Return Value*: {BinaryTreeNode | undefined: The uncle node, or undefined if the uncle doesn't exist.}
+
+*Exceptions*: None explicitly defined in the code.
+
+*Usage Example*:
+
+[source,javascript]
+----
+// Requires a tree structure to be built for this to be meaningful.
+----
+
+=== static copyNode({sourceNode: BinaryTreeNode}, {targetNode: BinaryTreeNode})
+
+[source,javascript]
+----
+static copyNode(sourceNode, targetNode) {
+    targetNode.setValue(sourceNode.value);
+    targetNode.setLeft(sourceNode.left);
+    targetNode.setRight(sourceNode.right);
+}
+----
+
+*Purpose*: Copies the value and children of one node to another.
+
+*Parameters*:
+
+* `{sourceNode}` - {BinaryTreeNode: The node to copy from.}
+* `{targetNode}` - {BinaryTreeNode: The node to copy to.}
+
+*Return Value*: {void}
+
+*Exceptions*: None explicitly defined in the code.
+
+*Usage Example*:
+
+[source,javascript]
+----
+const source = new BinaryTreeNode(10);
+const target = new BinaryTreeNode();
+BinaryTreeNode.copyNode(source, target);
+----
+
+
+== Important Notes
+
+* The `Comparator` used internally determines how node values are compared.  Ensure the `Comparator` is configured appropriately for the data type of the node values.
+* The `meta` property provides a flexible way to store additional information associated with each node.
+* The `height`, `leftHeight`, `rightHeight`, and `balanceFactor` properties are computed on demand.  Frequent access to these properties might impact performance.
+* Error handling for invalid inputs (e.g., null or undefined nodes) is minimal.  More robust error handling might be needed in production environments.
+
