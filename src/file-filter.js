@@ -55,25 +55,53 @@ class FileFilter {
   filterByScope(files, scope = 'all') {
     this.logger.info(`Filtering ${files.length} files with scope: ${scope}`);
 
-    // First filter by documentable file types
-    const documentableFiles = files.filter(file => this.shouldDocumentFile(file.filename));
+    const deletedFiles = files.filter(file => file.status === 'removed');
+    const activeFiles = files.filter(file => file.status !== 'removed');
 
-    this.logger.info(`Found ${documentableFiles.length} documentable files`);
+    const documentableFiles = activeFiles.filter(file => this.shouldDocumentFile(file.filename));
+
+    const documentableDeletedFiles = deletedFiles.filter(file => this.shouldDocumentFile(file.filename));
+
+    this.logger.info(`Found ${documentableFiles.length} documentable files and ${documentableDeletedFiles.length} deleted files`);
+
+    let filteredActive = documentableFiles;
+    let filteredDeleted = documentableDeletedFiles;
 
     if (scope === 'all') {
-      return documentableFiles;
+    } else if (scope.startsWith('include:')) {
+      const patterns = scope.substring(8).split(',').map(p => p.trim()).filter(p => p);
+      filteredActive = this.filterByPatterns(documentableFiles, patterns, true);
+      filteredDeleted = this.filterByPatterns(documentableDeletedFiles, patterns, true);
+    } else if (scope.startsWith('exclude:')) {
+      const patterns = scope.substring(8).split(',').map(p => p.trim()).filter(p => p);
+      filteredActive = this.filterByPatterns(documentableFiles, patterns, false);
+      filteredDeleted = this.filterByPatterns(documentableDeletedFiles, patterns, false);
+    } else {
+      this.logger.warn(`Invalid scope: ${scope}, returning all documentable files`);
     }
 
-    if (scope.startsWith('include:')) {
-      return this.filterByIncludePatterns(documentableFiles, scope.substring(8));
-    }
+    const result = [...filteredActive, ...filteredDeleted];
 
-    if (scope.startsWith('exclude:')) {
-      return this.filterByExcludePatterns(documentableFiles, scope.substring(8));
-    }
+    this.logger.info(`Final result: ${filteredActive.length} active files, ${filteredDeleted.length} deleted files`);
 
-    this.logger.warn(`Invalid scope: ${scope}, returning all documentable files`);
-    return documentableFiles;
+    return result;
+  }
+
+  /**
+   * Filter files by patterns
+   * @param {Array} files - Files to filter
+   * @param {Array} patterns - Patterns to match
+   * @param {boolean} include - If true, include matching files. If false, exclude them
+   * @returns {Array} - Filtered files
+   */
+  filterByPatterns(files, patterns, include) {
+    return files.filter(file => {
+      const basename = path.basename(file.filename);
+      const matches = patterns.some(pattern =>
+          this.matchesPattern(file.filename, basename, pattern)
+      );
+      return include ? matches : !matches;
+    });
   }
 
   /**
@@ -143,18 +171,37 @@ class FileFilter {
    */
   getFilterStats(originalFiles, filteredFiles) {
     const excluded = originalFiles.length - filteredFiles.length;
+    const deleted = filteredFiles.filter(f => f.status === 'removed').length;
+    const active = filteredFiles.filter(f => f.status !== 'removed').length;
+
     const byExtension = {};
+    const byStatus = {
+      added: 0,
+      modified: 0,
+      removed: deleted
+    };
 
     filteredFiles.forEach(file => {
-      const ext = path.extname(file.filename).slice(1) || 'no-extension';
-      byExtension[ext] = (byExtension[ext] || 0) + 1;
+      if (file.status !== 'removed') {
+        const ext = path.extname(file.filename).slice(1) || 'no-extension';
+        byExtension[ext] = (byExtension[ext] || 0) + 1;
+      }
+
+      if (file.status === 'added') {
+        byStatus.added++;
+      } else if (file.status === 'modified') {
+        byStatus.modified++;
+      }
     });
 
     return {
       total: originalFiles.length,
       included: filteredFiles.length,
       excluded,
-      byExtension
+      active,
+      deleted,
+      byExtension,
+      byStatus
     };
   }
 }

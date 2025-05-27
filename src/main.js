@@ -205,6 +205,7 @@ class DocumentationGenerator {
     const results = {
       generated: [],
       updated: [],
+      deleted: [],
       skipped: [],
       failed: []
     };
@@ -217,9 +218,25 @@ class DocumentationGenerator {
 
     // Process all files and collect changes
     const filesToCommit = [];
+    const filesToDelete = [];
 
     for (const file of files) {
       try {
+        if (file.status === 'removed') {
+          const docPath = this.getDocPath(file.filename, command.command);
+
+          const docExists = await this.checkDocExists(docPath, docsBranch);
+
+          if (docExists) {
+            filesToDelete.push(docPath);
+            results.deleted.push(docPath);
+            this.logger.info(`Marking for deletion: ${docPath}`);
+          } else {
+            this.logger.debug(`Doc file doesn't exist for removed file: ${file.filename}`);
+          }
+          continue;
+        }
+
         const processedFile = await this.processFileForBatch(file, prDetails, docsBranch, command);
 
         if (processedFile) {
@@ -246,25 +263,33 @@ class DocumentationGenerator {
       }
     }
 
-    // Commit all files at once if there are any to commit
-    if (filesToCommit.length > 0) {
+    // Commit all changes at once
+    if (filesToCommit.length > 0 || filesToDelete.length > 0) {
       const commitMessage = this.createCommitMessage(prDetails.number, results, command);
 
       try {
-        await this.githubClient.commitMultipleFiles(
+        await this.githubClient.commitMultipleChanges(
             docsBranch,
             filesToCommit,
+            filesToDelete,
             commitMessage
         );
-        this.logger.info(`Committed ${filesToCommit.length} files in a single commit`);
+        this.logger.info(`Committed ${filesToCommit.length} files and deleted ${filesToDelete.length} files in a single commit`);
       } catch (error) {
-        this.logger.error('Failed to commit files as batch, falling back to individual commits', error);
-        // Fallback to individual commits if batch commit fails
+        this.logger.error('Failed to commit changes as batch, falling back to individual operations', error);
+        // Fallback to individual operations
         for (const file of filesToCommit) {
           await this.githubClient.commitFile(
               docsBranch,
               file.path,
               file.content,
+              commitMessage
+          );
+        }
+        for (const filePath of filesToDelete) {
+          await this.githubClient.deleteFile(
+              docsBranch,
+              filePath,
               commitMessage
           );
         }
@@ -322,14 +347,32 @@ class DocumentationGenerator {
   }
 
   /**
-   * Get documentation file path
+   * Get documentation file path with folder structure
    * @param {string} sourceFile - Source file path
    * @param {string} project - Project name
    * @returns {string} - Documentation file path
    */
   getDocPath(sourceFile, project) {
-    const basename = path.basename(sourceFile, path.extname(sourceFile));
-    return `docs/${project}/${basename}.adoc`;
+    const pathWithoutExt = sourceFile.replace(/\.[^/.]+$/, '');
+    return `docs/${project}/${pathWithoutExt}.adoc`;
+  }
+
+  /**
+   * Check if documentation file exists
+   * @param {string} docPath - Documentation file path
+   * @param {string} branch - Branch to check
+   * @returns {Promise<boolean>} - Whether the file exists
+   */
+  async checkDocExists(docPath, branch) {
+    try {
+      await this.githubClient.getFileContent(docPath, branch);
+      return true;
+    } catch (error) {
+      if (error.message.includes('not found')) {
+        return false;
+      }
+      throw error;
+    }
   }
 
   /**
@@ -348,11 +391,14 @@ class DocumentationGenerator {
     if (results.updated.length > 0) {
       parts.push(`${results.updated.length} updated`);
     }
+    if (results.deleted.length > 0) {
+      parts.push(`${results.deleted.length} deleted`);
+    }
 
     const summary = parts.length > 0 ? ` (${parts.join(', ')})` : '';
     const scope = command.options.scope !== 'all' ? ` [${command.options.scope}]` : '';
 
-    return `docs: Generate documentation for PR #${prNumber}${summary}${scope}`;
+    return `docs: Update documentation for PR #${prNumber}${summary}${scope}`;
   }
 
   /**
@@ -490,7 +536,7 @@ class DocumentationGenerator {
    * @param {string} username - User who triggered action
    */
   async createOrUpdateDocsPR(prDetails, docsBranch, existingPR, results, command, username) {
-    const totalProcessed = results.generated.length + results.updated.length;
+    const totalProcessed = results.generated.length + results.updated.length + results.deleted.length;
 
     if (totalProcessed === 0 && results.failed.length > 0) {
       // All files failed
@@ -565,6 +611,12 @@ class DocumentationGenerator {
       body += '\n\n';
     }
 
+    if (results.deleted.length > 0) {
+      body += `## 🗑️ Deleted Documentation (${results.deleted.length})\n`;
+      body += results.deleted.map(f => `- ${f}`).join('\n');
+      body += '\n\n';
+    }
+
     if (results.skipped.length > 0) {
       body += `## ⏭️ Skipped Files (${results.skipped.length})\n`;
       body += results.skipped.map(f => `- ${f.source} - ${f.reason}`).join('\n');
@@ -604,6 +656,10 @@ class DocumentationGenerator {
       comment += `**Updated documentation:** ${results.updated.length} files\n`;
     }
 
+    if (results.deleted.length > 0) {
+      comment += `**Deleted documentation:** ${results.deleted.length} files\n`;
+    }
+
     if (results.skipped.length > 0) {
       comment += `**Skipped (unchanged):** ${results.skipped.length} files\n`;
     }
@@ -630,14 +686,14 @@ class DocumentationGenerator {
    * @param {string} username - User who triggered action
    */
   async postSummaryComment(prNumber, results, prUrl, existingPR, username) {
-    const total = results.generated.length + results.updated.length + results.skipped.length;
-    const processed = results.generated.length + results.updated.length;
+    const total = results.generated.length + results.updated.length + results.deleted.length + results.skipped.length;
 
     let comment = `✅ @${username} Documentation generation completed!\n\n`;
     comment += `📊 **Summary:**\n`;
     comment += `- Total files: ${total}\n`;
     comment += `- Generated: ${results.generated.length}\n`;
     comment += `- Updated: ${results.updated.length}\n`;
+    comment += `- Deleted: ${results.deleted.length}\n`;
     comment += `- Skipped: ${results.skipped.length}\n`;
     comment += `- Failed: ${results.failed.length}\n\n`;
 
