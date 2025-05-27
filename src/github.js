@@ -335,6 +335,48 @@ class GitHubClient {
   }
 
   /**
+   * Delete a file from the repository
+   * @param {string} branch - Branch name
+   * @param {string} path - File path to delete
+   * @param {string} message - Commit message
+   * @returns {Promise<object>} - Deletion result
+   */
+  async deleteFile(branch, path, message) {
+    try {
+      // Get file SHA first
+      const { data } = await this.octokit.rest.repos.getContent({
+        ...this.context,
+        path,
+        ref: branch
+      });
+
+      if (Array.isArray(data)) {
+        throw new Error(`Cannot delete directory: ${path}`);
+      }
+
+      // Delete the file
+      const result = await this.octokit.rest.repos.deleteFile({
+        ...this.context,
+        path,
+        message,
+        sha: data.sha,
+        branch
+      });
+
+      this.logger.info(`Deleted file: ${path} from ${branch}`);
+      return result;
+
+    } catch (error) {
+      if (error.status === 404) {
+        this.logger.warn(`File not found for deletion: ${path}`);
+        return null;
+      }
+      this.logger.error(`Failed to delete file: ${path}`, error);
+      throw new Error(`Failed to delete file ${path}: ${error.message}`);
+    }
+  }
+
+  /**
    * Create a pull request with validation
    * @param {string} title - PR title
    * @param {string} body - PR body
@@ -536,6 +578,95 @@ class GitHubClient {
     } catch (error) {
       this.logger.error('Failed to commit multiple files', error);
       throw new Error(`Failed to commit files: ${error.message}`);
+    }
+  }
+
+  /**
+   * Commit multiple changes (add/update/delete) in a single commit
+   * @param {string} branch - Branch name
+   * @param {Array} filesToCommit - Array of {path, content} objects to add/update
+   * @param {Array} filesToDelete - Array of file paths to delete
+   * @param {string} message - Commit message
+   * @returns {Promise<object>} - Commit result
+   */
+  async commitMultipleChanges(branch, filesToCommit, filesToDelete, message) {
+    try {
+      // Get the latest commit SHA for the branch
+      const { data: ref } = await this.octokit.rest.git.getRef({
+        ...this.context,
+        ref: `heads/${branch}`
+      });
+
+      const latestCommitSha = ref.object.sha;
+
+      // Get the tree SHA of the latest commit
+      const { data: commit } = await this.octokit.rest.git.getCommit({
+        ...this.context,
+        commit_sha: latestCommitSha
+      });
+
+      const baseTreeSha = commit.tree.sha;
+
+      // Create blobs for files to add/update
+      const blobs = await Promise.all(
+          filesToCommit.map(async (file) => {
+            const { data: blob } = await this.octokit.rest.git.createBlob({
+              ...this.context,
+              content: Buffer.from(file.content).toString('base64'),
+              encoding: 'base64'
+            });
+
+            return {
+              path: file.path,
+              mode: '100644',
+              type: 'blob',
+              sha: blob.sha
+            };
+          })
+      );
+
+      // Add deletion entries (sha: null means delete)
+      const deletions = filesToDelete.map(path => ({
+        path,
+        mode: '100644',
+        type: 'blob',
+        sha: null  // null SHA means delete the file
+      }));
+
+      // Combine all tree entries
+      const treeItems = [...blobs, ...deletions];
+
+      // Create a new tree with all the changes
+      const { data: newTree } = await this.octokit.rest.git.createTree({
+        ...this.context,
+        base_tree: baseTreeSha,
+        tree: treeItems
+      });
+
+      // Create a new commit
+      const { data: newCommit } = await this.octokit.rest.git.createCommit({
+        ...this.context,
+        message,
+        tree: newTree.sha,
+        parents: [latestCommitSha]
+      });
+
+      // Update the branch reference
+      await this.octokit.rest.git.updateRef({
+        ...this.context,
+        ref: `heads/${branch}`,
+        sha: newCommit.sha
+      });
+
+      this.logger.info(
+          `Created commit ${newCommit.sha.substring(0, 7)} with ${filesToCommit.length} files added/updated and ${filesToDelete.length} files deleted`
+      );
+
+      return newCommit;
+
+    } catch (error) {
+      this.logger.error('Failed to commit multiple changes', error);
+      throw new Error(`Failed to commit changes: ${error.message}`);
     }
   }
 }
