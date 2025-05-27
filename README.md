@@ -1,32 +1,27 @@
-# CodeScribe PR Documentation Generator
+# Doxai - AI-Powered Documentation Generator
 
-GitHub Action that automatically creates documentation for code files in merged PRs using AI.
+(Add an example of a picture later...)
 
-## Features
+*[English](./README.md) | [한국어](./README.ko.md)*
 
-- **Automatic Documentation Generation**: Creates comprehensive documentation in AsciiDoc format
-- **AI-Powered Analysis**: Leverages advanced AI models to analyze code and generate meaningful documentation
-- **Multi-Provider Support**: Compatible with multiple AI providers (OpenAI, Anthropic, Google, Azure)
-- **Multilingual**: Supports documentation in English and Korean
-- **Smart File Filtering**: Automatically filters documentable file types and provides customizable scope options
-- **Intelligent Updates**: Skips unchanged files and updates only modified code
-- **PR Reuse**: Uses existing documentation PRs for the same source PR to avoid clutter
-- **Seamless Integration**: Works with your existing GitHub workflow
+**Doxai** is an intelligent GitHub Action that automatically generates comprehensive technical documentation for your code changes when PRs are merged. Powered by advanced AI models, it creates detailed AsciiDoc documentation that helps developers understand and maintain codebases more effectively.
 
-## How It Works
+## ✨ Key Features
 
-1. A pull request is merged into your repository
-2. A team member comments on the PR using the CodeScribe command format: `!doxai [options]`
-3. CodeScribe analyzes the code changes using the specified AI model
-4. Documentation is generated in AsciiDoc format for relevant files only
-5. A new documentation PR is created (or existing one is updated)
-6. The original PR receives a comment with detailed results
+- **🤖 AI-Powered Analysis**: Leverages OpenAI GPT, Anthropic Claude, Google Gemini, or Azure OpenAI
+- **📚 Smart Documentation**: Generates detailed technical documentation in AsciiDoc format
+- **🔄 Intelligent Updates**: Only processes files that have actually changed since last documentation
+- **🌍 Multi-language Support**: Generate documentation in English or Korean
+- **🎯 Flexible Filtering**: Include/exclude files based on patterns and scopes
+- **⚡ Batch Processing**: Efficiently handles multiple files in single commits
+- **🔄 PR Reuse**: Updates existing documentation PRs instead of creating duplicates
+- **📁 Folder Structure**: Organizes documentation with proper folder hierarchies
 
-## Installation
+## 🚀 Quick Start
 
-### Step 1: Create Workflow File
+### 1. Setup Workflow
 
-Add this to your workflow file (e.g., `.github/workflows/doxai.yml`):
+Create `.github/workflows/doxai.yml`:
 
 ```yaml
 name: Doxai Documentation Generator
@@ -34,7 +29,6 @@ on:
   issue_comment:
     types: [created]
 
-# Required permissions for PR creation
 permissions:
   contents: write
   pull-requests: write
@@ -42,23 +36,28 @@ permissions:
 
 jobs:
   docs:
-    if: contains(github.event.comment.body, '!doxai')
+    if: |
+      github.event.issue.pull_request && 
+      contains(github.event.comment.body, '!doxai')
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: npm ci
-        
+
       - name: Generate Documentation
-        uses: yybmion/codescribe-action@v1
+        uses: yybmion/doxai@v1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           ai-provider: 'google'
@@ -67,85 +66,124 @@ jobs:
           language: 'en'
 ```
 
-### Step 2: Configure Repository Settings
+### 2. Configure Repository
 
-1. Go to your repository's **Settings** > **Actions** > **General**
-2. Under "Workflow permissions", select **"Read and write permissions"**
-3. Check **"Allow GitHub Actions to create and approve pull requests"**
-4. Click **Save**
+1. Go to **Settings** > **Actions** > **General**
+2. Set **Workflow permissions** to **"Read and write permissions"**
+3. Enable **"Allow GitHub Actions to create and approve pull requests"**
 
-### Step 3: Add AI API Key
+### 3. Add API Key
 
-1. Go to **Settings** > **Secrets and variables** > **Actions**
-2. Click **"New repository secret"**
-3. Name: `AI_API_KEY`
-4. Value: Your AI provider's API key
-5. Click **"Add secret"**
+1. Navigate to **Settings** > **Secrets and variables** > **Actions**
+2. Add your AI provider's API key as `AI_API_KEY`
 
-## Configuration
+### 4. Usage
 
-| Input | Description | Required | Default |
-|-------|-------------|----------|---------|
-| `github-token` | GitHub token for API access | Yes | `${{ secrets.GITHUB_TOKEN }}` |
-| `ai-provider` | AI provider (openai, anthropic, google, azure) | No | `google` |
-| `ai-model` | AI model to use | No | `gemini-1.5-flash` |
-| `ai-api-key` | API key for the chosen AI provider | Yes | - |
-| `language` | Documentation language (en, ko) | No | `en` |
+After merging a PR, comment with:
 
-## Usage
-
-**Important**: Documentation generation only works on **merged PRs**.
-
-Use the following command format in PR comments to trigger documentation generation:
-
-```
-!doxai [options]
-```
-
-### Command Options
-
-- `--scope`: Specify which files to document
-  - `all`: All documentable files (default)
-  - `include:pattern1,pattern2`: Only include files matching patterns
-  - `exclude:pattern1,pattern2`: Exclude files matching patterns
-- `--lang`: Documentation language
-  - `en`: English (default)
-  - `ko`: Korean
-
-### Examples
-
-Generate documentation for all files in English:
 ```
 !doxai
 ```
 
-Generate documentation for specific files in Korean:
-```
+## 🎛️ Advanced Usage
+
+### Command Options
+
+| Option | Description | Default | Examples |
+|--------|-------------|---------|----------|
+| `--scope` | File filtering scope | `all` | `include:src/`, `exclude:test/` |
+| `--lang` | Documentation language | `en` | `ko`, `en` |
+
+### Examples
+
+```bash
+# Generate docs for all files in English
+!doxai
+
+# Generate docs for specific directories in Korean
 !doxai --scope include:src/api,src/auth --lang ko
+
+# Exclude test files and generate in Korean
+!doxai --scope exclude:test,spec --lang ko
+
+# Include only JavaScript files
+!doxai --scope include:*.js
 ```
 
-Generate documentation excluding test files:
-```
-!doxai --scope exclude:test,spec
-```
+## ⚙️ Configuration
 
-Generate documentation for JavaScript files only:
-```
-!doxai --scope include:.js
-```
+### Action Inputs
 
-## Supported File Types
+| Input | Description | Required | Default |
+|-------|-------------|----------|---------|
+| `github-token` | GitHub API token | Yes | `${{ secrets.GITHUB_TOKEN }}` |
+| `ai-provider` | AI provider | No | `google` |
+| `ai-model` | AI model to use | No | `gemini-1.5-flash` |
+| `ai-api-key` | AI API key | Yes | - |
+| `language` | Documentation language | No | `en` |
 
-CodeScribe automatically filters and processes the following file types:
+### Supported AI Providers
+
+<details>
+<summary><strong>Google Gemini (Recommended)</strong></summary>
+
+```yaml
+ai-provider: 'google'
+ai-model: 'gemini-1.5-flash'  # or gemini-1.5-pro
+```
+- Fast and cost-effective
+- Excellent code understanding
+- Good multilingual support
+</details>
+
+<details>
+<summary><strong>OpenAI GPT</strong></summary>
+
+```yaml
+ai-provider: 'openai'
+ai-model: 'gpt-4'  # or gpt-3.5-turbo
+```
+- High-quality output
+- Comprehensive analysis
+- Premium pricing
+</details>
+
+<details>
+<summary><strong>Anthropic Claude</strong></summary>
+
+```yaml
+ai-provider: 'anthropic'
+ai-model: 'claude-3-opus'  # or claude-3-sonnet, claude-3-haiku
+```
+- Detailed explanations
+- Strong reasoning capabilities
+- Context-aware documentation
+</details>
+
+<details>
+<summary><strong>Azure OpenAI</strong></summary>
+
+```yaml
+ai-provider: 'azure'
+ai-model: 'your-deployment-name'
+env:
+  AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+```
+- Enterprise-grade security
+- Custom deployments
+- Regional compliance
+</details>
+
+## 📁 Supported File Types
 
 ### Programming Languages
 - **JavaScript/TypeScript**: `.js`, `.jsx`, `.ts`, `.tsx`
 - **Python**: `.py`, `.pyw`
 - **Java/JVM**: `.java`, `.kt`, `.scala`
 - **C/C++**: `.c`, `.cpp`, `.h`, `.hpp`
-- **Other**: `.cs`, `.rs`, `.go`, `.rb`, `.php`, `.swift`, `.dart`, `.r`
+- **Others**: `.cs`, `.rs`, `.go`, `.rb`, `.php`, `.swift`, `.dart`, `.r`
 
-### Web Development
+### Web Technologies
 - **Markup**: `.html`, `.htm`
 - **Styling**: `.css`, `.scss`, `.sass`, `.less`
 - **Frameworks**: `.vue`, `.svelte`
@@ -158,177 +196,115 @@ CodeScribe automatically filters and processes the following file types:
 ### Documentation
 - **Text**: `.md`, `.rst`, `.adoc`, `.txt`
 
-### Automatically Excluded
-- **Build directories**: `node_modules/`, `dist/`, `build/`, `target/`
-- **Binary files**: Images, videos, executables
-- **Lock files**: `package-lock.json`, `yarn.lock`
-- **Environment files**: `.env`, `.env.local`
+## 🧠 Smart Features
 
-## Smart Documentation Features
+### Intelligent File Processing
 
-### Intelligent Updates
-- **Changed files**: Only processes files that have been modified since last documentation
-- **Skipped files**: Shows which files were skipped because they haven't changed
-- **New files**: Generates documentation for newly added files
-- **Updated files**: Updates documentation for modified files
-
-### PR Management
-- **Single documentation PR**: Creates one documentation PR per source PR
-- **Automatic reuse**: Subsequent commands update the existing documentation PR
-- **Detailed tracking**: Shows exactly what was generated, updated, or skipped
+Doxai automatically:
+- ✅ **Detects Changes**: Only processes files modified since last documentation
+- ✅ **Skips Unchanged**: Avoids redundant processing for unchanged files
+- ✅ **Batch Commits**: Groups multiple file changes into single commits
+- ✅ **Folder Structure**: Creates organized documentation hierarchies
 
 ### Example Output
-```
-✅ @username Documentation generation completed.
-
-Updated documentation: #145
-
-**New:** 2 files
-**Updated:** 1 files  
-**Skipped:** 3 files (unchanged)
-```
-
-## Supported AI Providers
-
-### OpenAI
-```yaml
-ai-provider: 'openai'
-ai-model: 'gpt-4'  # or 'gpt-3.5-turbo'
-```
-
-### Anthropic
-```yaml
-ai-provider: 'anthropic'
-ai-model: 'claude-3-opus'  # or 'claude-3-sonnet', 'claude-3-haiku'
-```
-
-### Google (Recommended)
-```yaml
-ai-provider: 'google'
-ai-model: 'gemini-1.5-flash'  # or 'gemini-1.5-pro'
-```
-
-### Azure OpenAI
-```yaml
-ai-provider: 'azure'
-ai-model: 'your-deployment-name'
-```
-Set the `AZURE_OPENAI_ENDPOINT` environment variable in your workflow.
-
-## Documentation Format
-
-The generated documentation follows AsciiDoc format with the following structure:
 
 ```asciidoc
-= {Class/File Name}
-:toc:
-:source-highlighter: highlight.js
+= UserService Class Documentation
 
 == Overview
-
-The `{Class/File Name}` is responsible for {main functionality description}.
-
-[cols="1,3"]
-|===
-|PR Number|#{PR Number}
-|Author|@{Author}
-|Created Date|{Creation Date}
-|Last Modified|{Last Modified Date} by @{Modifier}
-|===
-
-== Detailed Description
-
-{Comprehensive description of the class/file functionality, 
-design patterns, and architectural considerations}
-
-== Main Use Cases
-
-[source,javascript]
-----
-// Example usage of this class/file
-const instance = new ExampleClass();
-instance.mainMethod();
-----
+The `UserService` class manages user authentication and profile operations...
 
 == Dependencies
-
-* `dependency1` - Purpose and relationship explanation
-* `dependency2` - Purpose and relationship explanation
+* `bcrypt` - Password hashing and verification
+* `jwt` - JSON Web Token handling
 
 == Key Methods
-
-=== methodName(parameterType parameterName)
-
-[source,javascript]
-----
-// Method implementation example
-function methodName(parameter) {
-    // Core logic
-    return result;
-}
-----
-
-*Purpose*: Detailed explanation of what this method accomplishes
-
-*Parameters*:
-* `parameterName` - Type and purpose, including constraints
-
-*Return Value*: Type and meaning of returned value
-
-*Exceptions*:
-* `ExceptionType` - When it occurs and how to handle
-
-*Usage Example*:
-[source,javascript]
-----
-const result = instance.methodName(value);
-----
-
-== Important Notes
-
-* Key considerations when using this code
-* Known limitations or constraints
+=== authenticate(email, password)
+*Purpose*: Authenticates user credentials and returns JWT token
+*Parameters*: 
+* `email` - User email address
+* `password` - Plain text password
+*Return Value*: JWT token string or null if authentication fails
 ```
 
-## Troubleshooting
+## 📊 Workflow Results
 
-### Common Issues
+After running, Doxai provides detailed feedback:
 
-**Error: "GitHub Actions is not permitted to create or approve pull requests"**
-- Solution: Enable PR creation permissions in repository settings (see Installation Step 2)
+```
+✅ @username Documentation generation completed!
 
-**Error: "Documentation generation is only possible on merged PRs"**
-- Solution: Merge the PR first, then run the documentation command
+📚 Documentation PR: #156 (created)
 
-**Error: "AI API request failed"**
-- Solution: Check your API key and ensure it has proper permissions
-- Verify the AI provider and model names are correct
+📊 Summary:
+- Generated: 3 files
+- Updated: 2 files  
+- Skipped: 1 file (unchanged)
+- Failed: 0 files
 
-**No files to document**
-- Check if your files are in the supported file types list
-- Verify your `--scope` pattern matches the intended files
+🔗 View Documentation: https://github.com/owner/repo/pull/156
+```
 
-## Requirements
+## 🚨 Important Notes
 
-- Node.js 20.x or later
-- GitHub repository with Actions enabled
-- API key for the selected AI provider
-- Merged pull requests (documentation generation only works on merged PRs)
+### Requirements
+- **Node.js**: 20.x or later
+- **Merged PRs Only**: Documentation generation only works on merged PRs
+- **Valid API Keys**: Ensure your AI provider API key is valid and has sufficient quota
 
-## Contributing
+### Limitations
+- Large files (>50KB) may be truncated for AI processing
+- Complex code structures might require manual review
+- API rate limits may affect processing speed
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+## 🛠️ Development
+
+### Local Setup
+
+```bash
+# Clone repository
+git clone https://github.com/yybmion/doxai.git
+cd doxai
+
+# Install dependencies
+npm install
+
+# Run tests
+npm test
+
+# Run with coverage
+npm run test:coverage
+```
+
+### Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run specific test file
+npm test -- --testPathPattern=ai-client
+
+# Watch mode
+npm run test:watch
+```
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## License
+## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-**Note**: This action requires merged PRs to function. The AI analysis is performed on the final merged code to ensure documentation accuracy.
+**Made with ❤️ by [yybmion](https://github.com/yybmion)**
+
+*Star ⭐ this repo if you find it helpful!

@@ -8,7 +8,7 @@ const AIClient = require('./ai-client');
 const CommandParser = require('./command-parser');
 const FileFilter = require('./file-filter');
 const Logger = require('./logger');
-const { createDocsPrompt, createUpdateDocsPrompt } = require('./docs-prompt');
+const { createDocsPrompt, createUpdateDocsPrompt, docsPromptTemplates } = require('./docs-prompt');
 const config = require('./config');
 
 /**
@@ -514,7 +514,7 @@ class DocumentationGenerator {
    * @returns {Promise<string>} - Generated documentation
    */
   async generateDocumentation(filename, content, existingDoc, prDetails, language) {
-    const systemPrompt = config.docsPromptTemplates?.[language] || config.docsPromptTemplates?.en || '';
+    const systemPrompt = docsPromptTemplates[language] || docsPromptTemplates.en;
 
     let userPrompt;
     if (existingDoc) {
