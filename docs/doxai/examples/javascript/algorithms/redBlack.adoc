@@ -1,0 +1,121 @@
+```asciidoc
+= RedBlackTree
+:toc:
+:source-highlighter: highlight.js
+
+== Overview
+
+`RedBlackTree` 클래스는 이진 탐색 트리(Binary Search Tree)를 기반으로 한 레드-블랙 트리(Red-Black Tree)를 구현합니다.  레드-블랙 트리는 균형 잡힌 이진 탐색 트리의 한 종류로, 삽입 및 삭제 연산 후에도 트리의 높이가 로그 시간에 비례하도록 유지하여 효율적인 검색, 삽입, 삭제 연산을 보장합니다. 이 클래스는 `BinarySearchTree` 클래스를 상속받아 기본적인 이진 탐색 트리 기능을 확장합니다.
+
+[cols="1,3"]
+|===
+|PR 번호|#40
+|작성자|yybmion
+|작성일|2025-05-27
+|마지막 수정|2025-05-27 by yybmion
+|===
+
+== Detailed Description
+
+`RedBlackTree` 클래스는 `BinarySearchTree` 클래스를 상속받아 레드-블랙 트리의 특성을 구현합니다.  노드의 색상(빨강 또는 검정)을 관리하여 트리의 균형을 유지합니다.  삽입 연산(`insert`)은 새로운 노드를 삽입한 후 레드-블랙 트리의 규칙을 위반하지 않도록 트리를 재균형합니다.  삭제 연산(`remove`)은 아직 구현되지 않았습니다.  재균형 과정은 `balance` 메서드에서 수행되며, 필요에 따라 색상 변경(recoloring)과 회전(rotation) 연산을 포함합니다.  회전 연산은 `leftLeftRotation`, `leftRightRotation`, `rightRightRotation`, `rightLeftRotation` 메서드에서 각각 구현됩니다.  `makeNodeRed`, `makeNodeBlack`, `isNodeRed`, `isNodeBlack`, `swapNodeColors` 메서드는 노드의 색상을 관리하는 데 사용됩니다.  `nodeComparator`는 노드 비교를 위한 객체로, 이 부분의 구현 내용은 코드에서 명확하지 않습니다.
+
+== Main Use Cases
+
+레드-블랙 트리는 효율적인 검색, 삽입, 삭제 연산이 필요한 경우에 사용됩니다.  예를 들어, 자주 데이터를 추가하거나 삭제해야 하는 데이터베이스 시스템이나, 빠른 검색 성능이 중요한 검색 엔진 등에 적합합니다.
+
+[source,javascript]
+----
+const tree = new RedBlackTree();
+tree.insert(10);
+tree.insert(20);
+tree.insert(5);
+// ... 추가 삽입 및 검색 연산
+----
+
+== Dependencies
+
+* `BinarySearchTree` - `../binary-search-tree/BinarySearchTree` :  `RedBlackTree`는 `BinarySearchTree` 클래스를 상속받아 기본적인 이진 탐색 트리 기능을 사용합니다.  `BinarySearchTree` 클래스는 노드의 삽입, 검색 등의 기본적인 기능을 제공합니다.
+* `nodeComparator` -  노드 비교를 위한 객체. 구현 방식은 코드에서 명확하지 않습니다.
+
+== Key Methods
+
+=== insert(value)
+
+[source,javascript]
+----
+insert(value) {
+  const insertedNode = super.insert(value);
+  if (this.nodeComparator.equal(insertedNode, this.root)) {
+    this.makeNodeBlack(insertedNode);
+  } else {
+    this.makeNodeRed(insertedNode);
+  }
+  this.balance(insertedNode);
+  return insertedNode;
+}
+----
+
+*목적*:  주어진 값을 레드-블랙 트리에 삽입하고 트리를 재균형합니다.
+
+*매개변수*:
+
+* `value` - 삽입할 값.
+
+*반환값*: 삽입된 노드.
+
+*예외*: 없음.
+
+*사용 예*:
+
+[source,javascript]
+----
+const newNode = tree.insert(15);
+----
+
+
+=== remove(value)
+
+*목적*: 주어진 값을 레드-블랙 트리에서 삭제합니다. (아직 구현되지 않음)
+
+*매개변수*:
+
+* `value` - 삭제할 값.
+
+*반환값*:  boolean (구현되지 않음)
+
+*예외*: `Error: "Can't remove ${value}. Remove method is not implemented yet"`
+
+
+=== balance(node)
+
+*목적*:  주어진 노드를 기준으로 레드-블랙 트리의 균형을 유지하기 위해 색상 변경 및 회전 연산을 수행합니다.  코드는 복잡하며, 레드-블랙 트리의 균형 유지 알고리즘을 구현합니다.
+
+*매개변수*:
+
+* `node` - 균형을 맞춰야 할 노드.
+
+*반환값*: 없음.
+
+*예외*: 없음.
+
+
+=== leftLeftRotation(grandParentNode), leftRightRotation(grandParentNode), rightRightRotation(grandParentNode), rightLeftRotation(grandParentNode)
+
+*목적*:  레드-블랙 트리의 재균형 과정에서 필요한 회전 연산을 수행합니다. 각 메서드는 특정한 회전 케이스(left-left, left-right, right-right, right-left)를 처리합니다.
+
+*매개변수*:
+
+* `grandParentNode` - 회전의 기준이 되는 노드.
+
+*반환값*: 회전 후 새로운 루트 노드.
+
+*예외*: 없음.
+
+
+== Important Notes
+
+* `nodeComparator`의 구현 방식이 코드에서 명확하지 않으므로, 사용 전에 적절한 비교 함수를 제공해야 합니다.
+* `remove` 메서드는 아직 구현되지 않았습니다.
+* 레드-블랙 트리의 균형 유지 알고리즘은 복잡하므로, 코드를 이해하고 수정할 때 주의해야 합니다.
+
+```
