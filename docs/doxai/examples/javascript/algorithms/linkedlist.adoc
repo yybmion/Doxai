@@ -1,0 +1,178 @@
+```asciidoc
+= LinkedList Class
+
+== PR Information
+
+* PR Number: 31
+* Author: yybmion
+* Created Date: 2025-05-27
+* Last Modified: 2025-05-27 by yybmion
+
+== File Information
+
+* Filename: examples/javascript/algorithms/linkedlist.js
+* Language: JavaScript
+
+== Description
+
+This document describes the `LinkedList` class, a JavaScript implementation of a singly linked list data structure.  The class provides methods for manipulating the list, including insertion, deletion, searching, and reversal.  It utilizes a `Comparator` class (assumed to be defined elsewhere, see Dependencies) for value comparisons.  The exact functionality of the `Comparator` is assumed, and its documentation is not included here.
+
+== Dependencies
+
+* `LinkedListNode`:  A class representing a node in the linked list (assumed to be defined in `./LinkedListNode.js`).  The exact implementation details are not provided here.
+* `Comparator`: A class providing comparison functionality (assumed to be defined in `../../utils/comparator/Comparator.js`).  The exact implementation details are not provided here.  Its `equal` method is used for value comparisons.
+
+== Class: LinkedList
+
+[source,javascript]
+----
+export default class LinkedList {
+  // ... (class methods are documented below)
+}
+----
+
+=== Constructor
+
+[source,javascript]
+----
+constructor(comparatorFunction) {
+  this.head = null;
+  this.tail = null;
+  this.compare = new Comparator(comparatorFunction);
+}
+----
+
+* `comparatorFunction`: (Optional) A custom comparison function to be used by the `Comparator` for value comparisons.  The exact signature is assumed.
+
+=== Methods
+
+==== `prepend(value)`
+
+[source,javascript]
+----
+prepend(value) {
+  // ...
+}
+----
+
+Adds a new node with the given `value` to the beginning of the list.
+
+==== `append(value)`
+
+[source,javascript]
+----
+append(value) {
+  // ...
+}
+----
+
+Adds a new node with the given `value` to the end of the list.
+
+==== `insert(value, rawIndex)`
+
+[source,javascript]
+----
+insert(value, rawIndex) {
+  // ...
+}
+----
+
+Inserts a new node with the given `value` at the specified `index`.  Handles negative indices by inserting at the beginning.
+
+==== `delete(value)`
+
+[source,javascript]
+----
+delete(value) {
+  // ...
+}
+----
+
+Removes all nodes with the given `value` from the list.
+
+==== `find({ value, callback })`
+
+[source,javascript]
+----
+find({ value = undefined, callback = undefined }) {
+  // ...
+}
+----
+
+Finds a node in the list based on either a given `value` or a `callback` function.
+
+==== `deleteTail()`
+
+[source,javascript]
+----
+deleteTail() {
+  // ...
+}
+----
+
+Removes and returns the last node from the list.
+
+==== `deleteHead()`
+
+[source,javascript]
+----
+deleteHead() {
+  // ...
+}
+----
+
+Removes and returns the first node from the list.
+
+==== `fromArray(values)`
+
+[source,javascript]
+----
+fromArray(values) {
+  // ...
+}
+----
+
+Creates a linked list from an array of `values`.
+
+==== `toArray()`
+
+[source,javascript]
+----
+toArray() {
+  // ...
+}
+----
+
+Converts the linked list into an array of `LinkedListNode` objects.
+
+==== `toString(callback)`
+
+[source,javascript]
+----
+toString(callback) {
+  // ...
+}
+----
+
+Converts the linked list into a string representation.  An optional `callback` function can be provided to customize the string representation of each node.
+
+==== `reverse()`
+
+[source,javascript]
+----
+reverse() {
+  // ...
+}
+----
+
+Reverses the linked list in place.
+
+
+== Example Usage
+
+(Example usage would be added here if a clear example could be constructed without assumptions about the unspecified parts of the code)
+
+== Notes
+
+The exact behavior of the `Comparator` class and the `LinkedListNode` class are not fully specified in the provided code.  This documentation relies on assumptions about their functionality.  Further clarification is needed for complete understanding.
+```
