@@ -35,6 +35,15 @@ class DocsPromptGenerator {
   }
 
   /**
+   * Get clean filename from full path
+   * @param {string} fullPath - Full file path
+   * @returns {string} - Clean filename only
+   */
+  getCleanFilename(fullPath) {
+    return fullPath.split('/').pop();
+  }
+
+  /**
    * Get language display name from file extension
    * @param {string} filename - File name
    * @returns {string} - Language display name
@@ -63,6 +72,7 @@ class DocsPromptGenerator {
    */
   createDocsPrompt(filename, fileContent, prDetails, language = 'en') {
     const codeLanguage = this.getLanguageFromFilename(filename);
+    const cleanFilename = this.getCleanFilename(filename);
     const template = this.getTemplate(language, 'create', codeLanguage);
 
     return template
@@ -71,7 +81,8 @@ class DocsPromptGenerator {
     .replace(/\${createdDate}/g, this.formatDate(prDetails.createdAt))
     .replace(/\${updatedDate}/g, this.formatDate(prDetails.updatedAt))
     .replace(/\${updatedBy}/g, prDetails.mergedBy || prDetails.author)
-    .replace(/\${filename}/g, filename)
+    .replace(/\${filename}/g, cleanFilename)
+    .replace(/\${fullPath}/g, filename)
     .replace(/\${fileContent}/g, fileContent);
   }
 
@@ -86,6 +97,7 @@ class DocsPromptGenerator {
    */
   createUpdateDocsPrompt(filename, fileContent, existingDocContent, prDetails, language = 'en') {
     const codeLanguage = this.getLanguageFromFilename(filename);
+    const cleanFilename = this.getCleanFilename(filename);
     const template = this.getTemplate(language, 'update', codeLanguage);
 
     return template
@@ -94,7 +106,8 @@ class DocsPromptGenerator {
     .replace(/\${createdDate}/g, this.formatDate(prDetails.createdAt))
     .replace(/\${updatedDate}/g, this.formatDate(prDetails.updatedAt))
     .replace(/\${updatedBy}/g, prDetails.mergedBy || prDetails.author)
-    .replace(/\${filename}/g, filename)
+    .replace(/\${filename}/g, cleanFilename)
+    .replace(/\${fullPath}/g, filename)
     .replace(/\${fileContent}/g, fileContent)
     .replace(/\${existingDocContent}/g, existingDocContent);
   }
@@ -121,6 +134,7 @@ class DocsPromptGenerator {
 
 ## 파일 정보
 - 파일명: \${filename}
+- 전체 경로: \${fullPath}
 - 언어: ${codeLanguage}
 
 ## 코드
@@ -194,6 +208,7 @@ Please analyze the following ${codeLanguage} file and generate technical documen
 
 ## File Information
 - Filename: \${filename}
+- Full Path: \${fullPath}
 - Language: ${codeLanguage}
 
 ## Code
