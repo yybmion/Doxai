@@ -1,4 +1,4 @@
-name: 'AutoDoc PR'
+name: 'CodeScribe AI'
 description: 'An action that automatically creates documentation for code files in merged PRs using AI'
 author: 'yybmion'
 
