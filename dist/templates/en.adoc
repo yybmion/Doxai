@@ -1,0 +1,54 @@
+= {File Name}
+:toc:
+:source-highlighter: highlight.js
+
+== Overview
+
+The `{File Name}` is responsible for {main functionality and role}.
+
+[cols="1,3"]
+|===
+|PR Number|#{PR Number}
+|Author|@{Author}
+|Created Date|{Creation Date}
+|Last Modified|{Last Modified Date} by @{Modifier}
+|File Type|{Class/Function/Script/Config/Module}
+|Language|{Programming Language}
+|===
+
+== Detailed Description
+
+{Specific functionality, purpose, and role within the system}
+
+== Dependencies
+
+* `{Dependency1}` - {Purpose and role of the dependency}
+* `{Dependency2}` - {Purpose and role of the dependency}
+
+== Key Components
+
+=== {Function/Method/Configuration Name}
+
+[source,{language}]
+----
+{Function signature/Configuration example/Code block}
+----
+
+*Function*: {Task performed by this component}
+
+*Input*:
+* `{Parameter/Option name}` (`{Type}`) - {Description}
+
+*Output*: `{Return type/Result}` - {Meaning and expected result}
+
+{Repeat with same pattern}
+
+== Implementation Features
+
+{Special patterns, algorithms, configuration methods used in the file}
+
+== Notes
+
+* {Important considerations when using this file}
+* {Constraints or prerequisites}
+* {Known limitations}
