@@ -5,7 +5,7 @@ class Config {
   constructor() {
     this.githubToken = this.getRequiredInput('github-token');
     this.aiProvider = this.getInput('ai-provider', 'google');
-    this.aiModel = this.getInput('ai-model', 'gemini-1.5-pro');
+    this.aiModel = this.getInput('ai-model', 'gemini-2.0-flash');
     this.aiApiKey = this.getRequiredInput('ai-api-key');
     this.language = this.getInput('language', 'en');
 
@@ -30,7 +30,7 @@ class Config {
       },
       google: {
         endpoint: 'https://generativelanguage.googleapis.com/v1beta/models',
-        models: ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-1.0-pro'],
+        models: ['gemini-2.0-flash', 'gemini-2.0-flash-001', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-1.0-pro'],
         headers: (apiKey) => ({
           'Content-Type': 'application/json',
           'x-goog-api-key': apiKey

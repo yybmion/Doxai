@@ -61,7 +61,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           ai-provider: 'google'
-          ai-model: 'gemini-1.5-pro'
+          ai-model: 'gemini-2.0-flash'
           ai-api-key: ${{ secrets.AI_API_KEY }}
           language: 'en'
 ```
@@ -118,7 +118,7 @@ After merging a PR, comment with:
 |-------|-------------|----------|-------------------------------|
 | `github-token` | GitHub API token | Yes | `${{ secrets.GITHUB_TOKEN }}` |
 | `ai-provider` | AI provider | No | `google`                      |
-| `ai-model` | AI model to use | No | `gemini-1.5-pro`              |
+| `ai-model` | AI model to use | No | `gemini-2.0-flash`            |
 | `ai-api-key` | AI API key | Yes | -                             |
 | `language` | Documentation language | No | `en`                          |
 
@@ -129,7 +129,7 @@ After merging a PR, comment with:
 
 ```yaml
 ai-provider: 'google'
-ai-model: 'gemini-1.5-pro'  # or gemini-1.5-pro
+ai-model: 'gemini-2.0-flash'  # or gemini-1.5-flash
 ```
 - Fast and cost-effective
 - Excellent code understanding
