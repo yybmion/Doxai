@@ -520,13 +520,9 @@ class DocumentationGenerator {
    */
   async generateDocumentation(filename, content, existingDoc, prDetails, language) {
     this.logger.info(`=== Documentation Generation Debug ===`);
-    this.logger.info(`Original filename: ${filename}`);
+    this.logger.info(`Filename: ${filename}`);
     this.logger.info(`Language: ${language}`);
     this.logger.info(`Has existing doc: ${!!existingDoc}`);
-
-    // ✅ 여기가 핵심 수정 부분: 파일명만 추출
-    const cleanFilename = filename.split('/').pop();
-    this.logger.info(`Clean filename for AI: ${cleanFilename}`);
 
     const systemPrompt = docsPromptTemplates[language] || docsPromptTemplates.en || '';
 
@@ -535,14 +531,14 @@ class DocumentationGenerator {
 
     let userPrompt;
     if (existingDoc) {
-      userPrompt = createUpdateDocsPrompt(cleanFilename, content, existingDoc, prDetails, language);
+      userPrompt = createUpdateDocsPrompt(filename, content, existingDoc, prDetails, language);
       this.logger.info('Using update prompt template');
     } else {
-      userPrompt = createDocsPrompt(cleanFilename, content, prDetails, language);
+      userPrompt = createDocsPrompt(filename, content, prDetails, language);
       this.logger.info('Using create prompt template');
     }
 
-    this.logger.debug(`User prompt preview: ${userPrompt.substring(0, 500)}...`);
+    this.logger.debug(`User prompt preview: ${userPrompt.substring(0, 300)}...`);
     this.logger.info(`Sending AI request with language: ${language}`);
 
     const result = await this.aiClient.sendPrompt(systemPrompt, userPrompt);
