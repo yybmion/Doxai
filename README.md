@@ -8,6 +8,8 @@
 
 ## ✨ Key Features
 
+[Doxai Core Features Guide](./FEATURES.md)
+
 - **AI-Powered Analysis**: Leverages OpenAI GPT, Anthropic Claude, Google Gemini, or Azure OpenAI
 - **Smart Documentation**: Generates detailed technical documentation in AsciiDoc format
 - **Intelligent Updates**: Only processes files that have actually changed since last documentation
