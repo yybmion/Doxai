@@ -126,18 +126,6 @@ class DocsPromptGenerator {
 
 다음 ${codeLanguage} 파일을 분석하여 **한국어로** AsciiDoc 형식의 기술 문서를 생성해주세요.
 
-## 🚨 절대적 규칙: 문서 제목
-**문서 첫 줄의 제목에는 반드시 파일명(\${filename})만 사용하세요!**
-
-올바른 형식: = \${filename}
-
-❌ 절대 사용 금지: = \${fullPath}
-❌ 절대 사용 금지: = src/main/java/com/example/demo/service/SignUpService.java
-❌ 절대 사용 금지: = service/SignUpService.java
-
-✅ 올바른 예시: = SignUpService.java
-✅ 올바른 예시: = UserController.java
-
 ## PR 정보
 - PR 번호: \${prNumber}
 - 작성자: \${author}
@@ -164,31 +152,18 @@ class DocsPromptGenerator {
 - ✅ "데이터를 빠르게 찾고 저장할 수 있는 레드-블랙 트리를 구현한다. 데이터가 한쪽으로 치우치지 않도록 자동으로 균형을 맞춘다"
 
 ## 중요한 요청사항
-1. **🔴 문서 제목(=)에는 파일명(\${filename})만 사용하세요! 전체 경로 절대 금지!**
-2. **자연스럽고 읽기 쉬운 한국어로 작성하세요**
-3. 위 코드를 철저히 분석하여 AsciiDoc 형식의 개발자 문서를 생성해주세요.
-4. 문서는 개발자가 이 코드를 이해하고 사용하는 데 필요한 모든 정보를 포함해야 합니다.
-5. 클래스/파일의 주요 기능, 메소드, 의존성 등을 명확하게 설명해주세요.
-6. 시스템 프롬프트에서 제공한 AsciiDoc 템플릿 형식을 정확히 따라주세요.
-7. 코드에서 명확하지 않은 부분은 추측하지 말고, 문서에 이를 명시해주세요.
-8. **모든 설명과 주석은 반드시 한국어로 작성해주세요.**
-9. **코드블럭(\`\`\`) 없이 순수한 AsciiDoc 문서만 반환하세요**. 추가 설명은 필요 없습니다.`,
+1. **자연스럽고 읽기 쉬운 한국어로 작성하세요**
+2. 위 코드를 철저히 분석하여 AsciiDoc 형식의 개발자 문서를 생성해주세요.
+3. 문서는 개발자가 이 코드를 이해하고 사용하는 데 필요한 모든 정보를 포함해야 합니다.
+4. 클래스/파일의 주요 기능, 메소드, 의존성 등을 명확하게 설명해주세요.
+5. 시스템 프롬프트에서 제공한 AsciiDoc 템플릿 형식을 정확히 따라주세요.
+6. 코드에서 명확하지 않은 부분은 추측하지 말고, 문서에 이를 명시해주세요.
+7. **모든 설명과 주석은 반드시 한국어로 작성해주세요.**
+8. **코드블럭(\`\`\`) 없이 순수한 AsciiDoc 문서만 반환하세요**. 추가 설명은 필요 없습니다.`,
 
         update: `# 코드 문서 업데이트 요청
 
 다음 ${codeLanguage} PR이 변경되었습니다. 기존 문서를 **자연스러운 한국어로** 업데이트해주세요.
-
-## 🚨 절대적 규칙: 문서 제목
-**문서 첫 줄의 제목에는 반드시 파일명(\${filename})만 사용하세요!**
-
-올바른 형식: = \${filename}
-
-❌ 절대 사용 금지: = \${fullPath}
-❌ 절대 사용 금지: = src/main/java/com/example/demo/service/SignUpService.java
-❌ 절대 사용 금지: = service/SignUpService.java
-
-✅ 올바른 예시: = SignUpService.java
-✅ 올바른 예시: = UserController.java
 
 ## PR 정보
 - PR 번호: \${prNumber}
@@ -211,32 +186,19 @@ class DocsPromptGenerator {
 \`\`\`
 
 ## 중요한 요청사항
-1. **🔴 문서 제목(=)에는 파일명(\${filename})만 사용하세요! 전체 경로 절대 금지!**
-2. **반드시 한국어로 문서를 업데이트해주세요.**
-3. 변경된 코드를 반영하여 기존 문서를 업데이트해주세요.
-4. 새로운 메소드나 기능은 문서에 추가하고, 제거된 것은 삭제해주세요.
-5. 기존 문서의 형식과 스타일을 유지해주세요.
-6. PR 정보 섹션을 최신 정보로 업데이트해주세요.
-7. **모든 설명과 주석은 반드시 한국어로 작성해주세요.**
-8. 업데이트된 전체 AsciiDoc(코드블럭(\`\`\`) 없는) 문서를 반환해주세요.`
+1. **반드시 한국어로 문서를 업데이트해주세요.**
+2. 변경된 코드를 반영하여 기존 문서를 업데이트해주세요.
+3. 새로운 메소드나 기능은 문서에 추가하고, 제거된 것은 삭제해주세요.
+4. 기존 문서의 형식과 스타일을 유지해주세요.
+5. PR 정보 섹션을 최신 정보로 업데이트해주세요.
+6. **모든 설명과 주석은 반드시 한국어로 작성해주세요.**
+7. 업데이트된 전체 AsciiDoc(코드블럭(\`\`\`) 없는) 문서를 반환해주세요.`
       },
 
       en: {
         create: `# Documentation Request
 
 Please analyze the following ${codeLanguage} file and generate technical documentation in AsciiDoc format **in English**.
-
-## 🚨 ABSOLUTE RULE: Document Title
-**The document title on the first line MUST use ONLY the filename (\\${filename})!**
-
-Correct format: = \${filename}
-
-❌ ABSOLUTELY FORBIDDEN: = \${fullPath}
-❌ ABSOLUTELY FORBIDDEN: = src/main/java/com/example/demo/service/SignUpService.java
-❌ ABSOLUTELY FORBIDDEN: = service/SignUpService.java
-
-✅ Correct example: = SignUpService.java
-✅ Correct example: = UserController.java
 
 ## PR Information
 - PR Number: \${prNumber}
@@ -264,31 +226,18 @@ Correct format: = \${filename}
 ✅ Good: "This class creates a red-black tree that helps you store and find data quickly. Unlike regular trees, it automatically keeps itself balanced so lookups stay fast even as you add more data."
 
 ## Requirements
-1. **🔴 Document title (=) must use ONLY filename (\${filename})! NO full path!**
-2. **Write in clear, natural English that's easy to understand**
-3. Thoroughly analyze the above code and generate developer documentation in AsciiDoc format.
-4. The documentation should include all necessary information for developers to understand and use this code.
-5. Clearly explain the main functionality, methods, and dependencies of the class/file.
-6. Follow the AsciiDoc template format provided in the system prompt exactly.
-7. Do not make assumptions about unclear parts; indicate these in the documentation.
-8. **All descriptions and comments must be written in English.**
-9. **Return pure AsciiDoc content without code blocks (\`\`\`)** without additional explanations.`,
+1. **Write in clear, natural English that's easy to understand**
+2. Thoroughly analyze the above code and generate developer documentation in AsciiDoc format.
+3. The documentation should include all necessary information for developers to understand and use this code.
+4. Clearly explain the main functionality, methods, and dependencies of the class/file.
+5. Follow the AsciiDoc template format provided in the system prompt exactly.
+6. Do not make assumptions about unclear parts; indicate these in the documentation.
+7. **All descriptions and comments must be written in English.**
+8. **Return pure AsciiDoc content without code blocks (\`\`\`)** without additional explanations.`,
 
         update: `# Documentation Update Request
 
 The following ${codeLanguage} file has been modified. Please update the existing documentation **in English**.
-
-## 🚨 ABSOLUTE RULE: Document Title
-**The document title on the first line MUST use ONLY the filename (\\${filename})!**
-
-Correct format: = \${filename}
-
-❌ ABSOLUTELY FORBIDDEN: = \${fullPath}
-❌ ABSOLUTELY FORBIDDEN: = src/main/java/com/example/demo/service/SignUpService.java
-❌ ABSOLUTELY FORBIDDEN: = service/SignUpService.java
-
-✅ Correct example: = SignUpService.java
-✅ Correct example: = UserController.java
 
 ## PR Information
 - PR Number: \${prNumber}
@@ -311,14 +260,13 @@ Correct format: = \${filename}
 \`\`\`
 
 ## Requirements
-1. **🔴 Document title (=) must use ONLY filename (\${filename})! NO full path!**
-2. **Update documentation in English.**
-3. Update the existing documentation to reflect the code changes.
-4. Add new methods or features to the documentation and remove deleted ones.
-5. Maintain the existing document's format and style.
-6. Update the PR information section with the latest details.
-7. **All descriptions and comments must be written in English.**
-8. Return the complete updated AsciiDoc(Return pure AsciiDoc content without code blocks (\`\`\`)) document.`
+1. **Update documentation in English.**
+2. Update the existing documentation to reflect the code changes.
+3. Add new methods or features to the documentation and remove deleted ones.
+4. Maintain the existing document's format and style.
+5. Update the PR information section with the latest details.
+6. **All descriptions and comments must be written in English.**
+7. Return the complete updated AsciiDoc(Return pure AsciiDoc content without code blocks (\`\`\`)) document.`
       }
     };
 
@@ -335,27 +283,9 @@ Correct format: = \${filename}
     const prompts = {
       ko: `당신은 코드 문서화 전문가입니다. 제공된 코드 파일을 철저히 분석하여 **자연스럽고 이해하기 쉬운 한국어로** AsciiDoc 형식의 정확하고 유용한 문서를 생성해야 합니다.
 
-## 🚨🚨🚨 절대적 문서 제목 규칙 🚨🚨🚨
-**절대 잊지 마세요: 문서 제목에는 파일명만 사용하세요!**
-
-문서를 다음과 같이 시작해야 합니다:
-= 파일명.확장자
-
-예시:
-- = SignUpService.java
-- = UserController.java
-- = app.js
-- = main.py
-
-절대로 다음과 같이 하지 마세요:
-- = src/main/java/com/example/demo/service/SignUpService.java ❌
-- = com/example/demo/service/SignUpService.java ❌
-- = service/SignUpService.java ❌
-- = any/path/SignUpService.java ❌
-
-**경로가 포함된 제목은 절대 사용하지 마세요!**
-
-**이 규칙을 절대 위반하지 마세요!**
+## 🔥 중요: 문서 제목 규칙
+- 문서 제목(=)에는 반드시 **파일명만** 사용하세요 (전체 경로 X)
+- 예시: "= SignUpService.java" (O), "= src/main/java/.../SignUpService.java" (X)
 
 ## 핵심 원칙: 자연스러운 문체
 
@@ -397,25 +327,9 @@ ${this.getAsciiDocTemplate()}`,
 
       en: `You are a code documentation expert. You need to thoroughly analyze the provided code file and generate precise and useful documentation **in English** in AsciiDoc format.
 
-## 🚨🚨🚨 ABSOLUTE Document Title Rules 🚨🚨🚨
-**NEVER FORGET: Document title must use filename only!**
-
-Your document MUST start like this:
-= filename.extension
-
-Examples:
-- = SignUpService.java
-- = UserController.java
-- = app.js
-- = main.py
-
-NEVER do this:
-- = src/main/java/com/example/demo/service/SignUpService.java ❌
-- = com/example/demo/service/SignUpService.java ❌
-- = service/SignUpService.java ❌
-- = any/path/SignUpService.java ❌
-
-**NEVER use paths in the title!**
+## 🔥 Important: Document Title Rules  
+- Use **filename only** in document title (=), NOT the full path
+- Example: "= SignUpService.java" (✅), "= src/main/java/.../SignUpService.java" (❌)
 
 ### Writing Style
 - Explain complex technical terms in simple language
@@ -464,13 +378,13 @@ ${this.getAsciiDocTemplateEn()}`
    * @returns {string} - AsciiDoc template
    */
   getAsciiDocTemplateEn() {
-    return `= 파일명만 작성 (예: SignUpService.java)
+    return `= {File Name Only (e.g., SignUpService.java)}
 :toc:
 :source-highlighter: highlight.js
 
 == Overview
 
-The \`파일명만\` is responsible for {main functionality and role}.
+The \`{File Name Only}\` is responsible for {main functionality and role}.
 
 [cols="1,3"]
 |===
@@ -519,13 +433,13 @@ The \`파일명만\` is responsible for {main functionality and role}.
   }
 
   getAsciiDocTemplate() {
-    return `= 파일명만 작성 (예: SignUpService.java)
+    return `= {파일명만 (예: SignUpService.java)}
 :toc:
 :source-highlighter: highlight.js
 
 == 개요
 
-\`파일명만\`은/는 {주요 기능과 역할}을 담당합니다.
+\`{파일명만}\`은/는 {주요 기능과 역할}을 담당합니다.
 
 [cols="1,3"]
 |===
