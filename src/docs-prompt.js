@@ -283,6 +283,10 @@ The following ${codeLanguage} file has been modified. Please update the existing
     const prompts = {
       ko: `당신은 코드 문서화 전문가입니다. 제공된 코드 파일을 철저히 분석하여 **자연스럽고 이해하기 쉬운 한국어로** AsciiDoc 형식의 정확하고 유용한 문서를 생성해야 합니다.
 
+## 🔥 중요: 문서 제목 규칙
+- 문서 제목(=)에는 반드시 **파일명만** 사용하세요 (전체 경로 X)
+- 예시: "= SignUpService.java" (O), "= src/main/java/.../SignUpService.java" (X)
+
 ## 핵심 원칙: 자연스러운 문체
 
 ### 문체 가이드
@@ -322,6 +326,10 @@ The following ${codeLanguage} file has been modified. Please update the existing
 ${this.getAsciiDocTemplate()}`,
 
       en: `You are a code documentation expert. You need to thoroughly analyze the provided code file and generate precise and useful documentation **in English** in AsciiDoc format.
+
+## 🔥 Important: Document Title Rules  
+- Use **filename only** in document title (=), NOT the full path
+- Example: "= SignUpService.java" (✅), "= src/main/java/.../SignUpService.java" (❌)
 
 ### Writing Style
 - Explain complex technical terms in simple language
@@ -370,13 +378,13 @@ ${this.getAsciiDocTemplateEn()}`
    * @returns {string} - AsciiDoc template
    */
   getAsciiDocTemplateEn() {
-    return `= {File Name}
+    return `= {File Name Only (e.g., SignUpService.java)}
 :toc:
 :source-highlighter: highlight.js
 
 == Overview
 
-The \`{File Name}\` is responsible for {main functionality and role}.
+The \`{File Name Only}\` is responsible for {main functionality and role}.
 
 [cols="1,3"]
 |===
@@ -425,13 +433,13 @@ The \`{File Name}\` is responsible for {main functionality and role}.
   }
 
   getAsciiDocTemplate() {
-    return `= {파일명}
+    return `= {파일명만 (예: SignUpService.java)}
 :toc:
 :source-highlighter: highlight.js
 
 == 개요
 
-\`{파일명}\`은/는 {주요 기능과 역할}을 담당합니다.
+\`{파일명만}\`은/는 {주요 기능과 역할}을 담당합니다.
 
 [cols="1,3"]
 |===
