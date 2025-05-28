@@ -344,7 +344,7 @@ ${this.getAsciiDocTemplate()}`,
 
 Use the following AsciiDoc format exactly:
 
-${this.getAsciiDocTemplate()}`
+${this.getAsciiDocTemplateEn()}`
     };
 
     return prompts[language] || prompts.en;
@@ -354,14 +354,14 @@ ${this.getAsciiDocTemplate()}`
    * Get AsciiDoc template structure
    * @returns {string} - AsciiDoc template
    */
-  getAsciiDocTemplate() {
-    return `= {Class/File Name}
+  getAsciiDocTemplateEn() {
+    return `= {File Name}
 :toc:
 :source-highlighter: highlight.js
 
 == Overview
 
-The \`{Class/File Name}\` is responsible for {main functionality description}. {Brief explanation of role in the system}
+The \`{File Name}\` is responsible for {main functionality and role}.
 
 [cols="1,3"]
 |===
@@ -369,60 +369,99 @@ The \`{Class/File Name}\` is responsible for {main functionality description}. {
 |Author|@{Author}
 |Created Date|{Creation Date}
 |Last Modified|{Last Modified Date} by @{Modifier}
+|File Type|{Class/Function/Script/Config/Module}
+|Language|{Programming Language}
 |===
 
 == Detailed Description
 
-{Detailed description of the class/file - 2-3 paragraphs explaining specific functionality, purpose, design intentions, etc.}
-
-== Main Use Cases
-
-[source,javascript]
-----
-// Simple example code using this class/file
-const instance = new {ClassName}(...);
-instance.{mainMethod}(...);
-----
+{Specific functionality, purpose, and role within the system}
 
 == Dependencies
 
-* \`{Dependency1}\` - {Purpose of the dependency and its relationship with this class}
-* \`{Dependency2}\` - {Purpose of the dependency and its relationship with this class}
+* \`{Dependency1}\` - {Purpose and role of the dependency}
+* \`{Dependency2}\` - {Purpose and role of the dependency}
 
-== Key Methods
+== Key Components
 
-=== {MethodName}({parameter types and names})
-
-[source,{language}]
-----
-// Method signature and main logic only
-{Simplified method code - focus on core logic}
-----
-
-*Purpose*: {Specific purpose of the method and what it accomplishes}
-
-*Parameters*:
-
-* \`{ParameterName}\` - {Type and purpose, constraints if any}
-
-*Return Value*: {Return type and meaning, possible range of return values}
-
-*Exceptions*:
-
-* \`{ExceptionName}\` - {When it occurs and how to handle it}
-
-*Usage Example*:
+=== {Function/Method/Configuration Name}
 
 [source,{language}]
 ----
-// Example code using this method
-const result = instance.{methodName}(params);
+{Function signature/Configuration example/Code block}
 ----
 
-== Important Notes
+*Function*: {Task performed by this component}
 
-* {Important considerations when using this code}
-* {Known limitations or cautions}`;
+*Input*:
+* \`{Parameter/Option name}\` (\`{Type}\`) - {Description}
+
+*Output*: \`{Return type/Result}\` - {Meaning and expected result}
+
+== Implementation Features
+
+{Special patterns, algorithms, configuration methods used in the file}
+
+== Notes
+
+* {Important considerations when using this file}
+* {Constraints or prerequisites}
+* {Known limitations}`;
+  }
+
+  getAsciiDocTemplate() {
+    return `= {파일명}
+:toc:
+:source-highlighter: highlight.js
+
+== 개요
+
+\`{파일명}\`은/는 {주요 기능과 역할}을 담당합니다.
+
+[cols="1,3"]
+|===
+|PR 번호|#{PR 번호}
+|작성자|@{작성자}
+|작성일|{작성일}
+|마지막 수정|{마지막 수정일} by @{수정자}
+|파일 유형|{클래스/함수/스크립트/설정파일/모듈}
+|언어|{프로그래밍 언어}
+|===
+
+== 상세 설명
+
+{파일의 구체적인 기능, 목적, 시스템에서의 역할}
+
+== 의존성
+
+* \`{의존성1}\` - {의존성의 목적과 역할}
+* \`{의존성2}\` - {의존성의 목적과 역할}
+
+== 주요 구성요소
+
+=== {함수명/메소드명/설정항목명}
+
+[source,{language}]
+----
+{함수 시그니처/설정 예시/코드 블록}
+----
+
+*기능*: {해당 요소가 수행하는 작업}
+
+*입력값*:
+* \`{매개변수/옵션명}\` (\`{타입}\`) - {설명}
+
+*출력값*: \`{반환타입/결과}\` - {의미와 예상 결과}
+
+== 구현 특징
+
+{파일에서 사용된 특별한 패턴, 알고리즘, 설정 방식 등}
+
+== 주의사항
+
+* {파일 사용시 주의해야 할 점}
+* {제약사항이나 전제조건}
+* {알려진 제한사항}`;
   }
 }
 
