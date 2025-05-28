@@ -25,8 +25,9 @@
 
 Create `.github/workflows/codeScribeAi.yml`:
 
-```yaml
+```yml
 name: CodeScribe AI Documentation
+
 on:
   issue_comment:
     types: [created]
@@ -59,7 +60,7 @@ jobs:
         run: npm ci
 
       - name: Generate Documentation
-        uses: yybmion/doxai@v1
+        uses: yybmion/codescribe-ai@v1.0.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           ai-provider: 'google'
