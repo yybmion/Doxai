@@ -8,14 +8,14 @@
 
 ## ✨ Key Features
 
-- **🤖 AI-Powered Analysis**: Leverages OpenAI GPT, Anthropic Claude, Google Gemini, or Azure OpenAI
-- **📚 Smart Documentation**: Generates detailed technical documentation in AsciiDoc format
-- **🔄 Intelligent Updates**: Only processes files that have actually changed since last documentation
-- **🌍 Multi-language Support**: Generate documentation in English or Korean
-- **🎯 Flexible Filtering**: Include/exclude files based on patterns and scopes
-- **⚡ Batch Processing**: Efficiently handles multiple files in single commits
-- **🔄 PR Reuse**: Updates existing documentation PRs instead of creating duplicates
-- **📁 Folder Structure**: Organizes documentation with proper folder hierarchies
+- **AI-Powered Analysis**: Leverages OpenAI GPT, Anthropic Claude, Google Gemini, or Azure OpenAI
+- **Smart Documentation**: Generates detailed technical documentation in AsciiDoc format
+- **Intelligent Updates**: Only processes files that have actually changed since last documentation
+- **Multi-language Support**: Generate documentation in English or Korean
+- **Flexible Filtering**: Include/exclude files based on patterns and scopes
+- **Batch Processing**: Efficiently handles multiple files in single commits
+- **PR Reuse**: Updates existing documentation PRs instead of creating duplicates
+- **Folder Structure**: Organizes documentation with proper folder hierarchies
 
 ## 🚀 Quick Start
 
@@ -61,7 +61,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           ai-provider: 'google'
-          ai-model: 'gemini-1.5-flash'
+          ai-model: 'gemini-1.5-pro'
           ai-api-key: ${{ secrets.AI_API_KEY }}
           language: 'en'
 ```
@@ -114,13 +114,13 @@ After merging a PR, comment with:
 
 ### Action Inputs
 
-| Input | Description | Required | Default |
-|-------|-------------|----------|---------|
+| Input | Description | Required | Default                       |
+|-------|-------------|----------|-------------------------------|
 | `github-token` | GitHub API token | Yes | `${{ secrets.GITHUB_TOKEN }}` |
-| `ai-provider` | AI provider | No | `google` |
-| `ai-model` | AI model to use | No | `gemini-1.5-flash` |
-| `ai-api-key` | AI API key | Yes | - |
-| `language` | Documentation language | No | `en` |
+| `ai-provider` | AI provider | No | `google`                      |
+| `ai-model` | AI model to use | No | `gemini-1.5-pro`              |
+| `ai-api-key` | AI API key | Yes | -                             |
+| `language` | Documentation language | No | `en`                          |
 
 ### Supported AI Providers
 
@@ -129,7 +129,7 @@ After merging a PR, comment with:
 
 ```yaml
 ai-provider: 'google'
-ai-model: 'gemini-1.5-flash'  # or gemini-1.5-pro
+ai-model: 'gemini-1.5-pro'  # or gemini-1.5-pro
 ```
 - Fast and cost-effective
 - Excellent code understanding
@@ -242,38 +242,6 @@ After running, Doxai provides detailed feedback:
 - Large files (>50KB) may be truncated for AI processing
 - Complex code structures might require manual review
 - API rate limits may affect processing speed
-
-## 🛠️ Development
-
-### Local Setup
-
-```bash
-# Clone repository
-git clone https://github.com/yybmion/doxai.git
-cd doxai
-
-# Install dependencies
-npm install
-
-# Run tests
-npm test
-
-# Run with coverage
-npm run test:coverage
-```
-
-### Testing
-
-```bash
-# Run all tests
-npm test
-
-# Run specific test file
-npm test -- --testPathPattern=ai-client
-
-# Watch mode
-npm run test:watch
-```
 
 ## 🤝 Contributing
 

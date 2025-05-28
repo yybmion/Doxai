@@ -1,10 +1,10 @@
-= {Class/File Name}
+= {File Name}
 :toc:
 :source-highlighter: highlight.js
 
 == Overview
 
-The `{Class/File Name}` is responsible for {main functionality description}.
+The `{File Name}` is responsible for {main functionality and role}.
 
 [cols="1,3"]
 |===
@@ -12,34 +12,43 @@ The `{Class/File Name}` is responsible for {main functionality description}.
 |Author|@{Author}
 |Created Date|{Creation Date}
 |Last Modified|{Last Modified Date} by @{Modifier}
+|File Type|{Class/Function/Script/Config/Module}
+|Language|{Programming Language}
 |===
 
-== Description
+== Detailed Description
 
-{Detailed description of the class/file}
+{Specific functionality, purpose, and role within the system}
 
 == Dependencies
 
-* `{Dependency1}` - {Description}
-* `{Dependency2}` - {Description}
+* `{Dependency1}` - {Purpose and role of the dependency}
+* `{Dependency2}` - {Purpose and role of the dependency}
 
-== Key Methods
+== Key Components
 
-=== {MethodName}({Parameters})
+=== {Function/Method/Configuration Name}
 
 [source,{language}]
 ----
-{Method code example}
+{Function signature/Configuration example/Code block}
 ----
 
-*Purpose*: {Method purpose}
+*Function*: {Task performed by this component}
 
-*Parameters*:
+*Input*:
+* `{Parameter/Option name}` (`{Type}`) - {Description}
 
-* `{ParameterName}` - {Description}
+*Output*: `{Return type/Result}` - {Meaning and expected result}
 
-*Return Value*: {Return value description}
+{Repeat with same pattern}
 
-*Exceptions*:
+== Implementation Features
 
-* `{ExceptionName}` - {Description}
+{Special patterns, algorithms, configuration methods used in the file}
+
+== Notes
+
+* {Important considerations when using this file}
+* {Constraints or prerequisites}
+* {Known limitations}

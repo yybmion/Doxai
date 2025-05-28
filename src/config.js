@@ -5,7 +5,7 @@ class Config {
   constructor() {
     this.githubToken = this.getRequiredInput('github-token');
     this.aiProvider = this.getInput('ai-provider', 'google');
-    this.aiModel = this.getInput('ai-model', 'gemini-1.5-flash');
+    this.aiModel = this.getInput('ai-model', 'gemini-1.5-pro');
     this.aiApiKey = this.getRequiredInput('ai-api-key');
     this.language = this.getInput('language', 'en');
 
