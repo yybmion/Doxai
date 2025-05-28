@@ -25,6 +25,7 @@
 
 `.github/workflows/codeScribeAi.yml` 파일 생성:
 
+```yml
 name: CodeScribe AI Documentation
 
 on:
