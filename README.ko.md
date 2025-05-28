@@ -61,7 +61,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           ai-provider: 'google'
-          ai-model: 'gemini-1.5-flash'
+          ai-model: 'gemini-2.0-flash'
           ai-api-key: ${{ secrets.AI_API_KEY }}
           language: 'ko'
 ```
@@ -114,13 +114,13 @@ PR 병합 후 다음과 같이 댓글 작성:
 
 ### Action 입력값
 
-| 입력 | 설명 | 필수 | 기본값 |
-|------|------|------|--------|
+| 입력 | 설명 | 필수 | 기본값                           |
+|------|------|------|-------------------------------|
 | `github-token` | GitHub API 토큰 | 예 | `${{ secrets.GITHUB_TOKEN }}` |
-| `ai-provider` | AI 제공업체 | 아니오 | `google` |
-| `ai-model` | 사용할 AI 모델 | 아니오 | `gemini-1.5-flash` |
-| `ai-api-key` | AI API 키 | 예 | - |
-| `language` | 문서화 언어 | 아니오 | `en` |
+| `ai-provider` | AI 제공업체 | 아니오 | `google`                      |
+| `ai-model` | 사용할 AI 모델 | 아니오 | `gemini-2.0-flash`            |
+| `ai-api-key` | AI API 키 | 예 | -                             |
+| `language` | 문서화 언어 | 아니오 | `en`                          |
 
 ### 지원하는 AI 제공업체
 
@@ -129,7 +129,7 @@ PR 병합 후 다음과 같이 댓글 작성:
 
 ```yaml
 ai-provider: 'google'
-ai-model: 'gemini-1.5-flash'  # 또는 gemini-1.5-pro
+ai-model: 'gemini-2.0-flash'  # 또는 gemini-1.5-flash
 ```
 - 빠르고 비용 효율적
 - 뛰어난 코드 이해력

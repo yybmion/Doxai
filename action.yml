@@ -14,9 +14,9 @@ inputs:
     default: 'google'
 
   ai-model:
-    description: 'AI model to use (gpt-4, claude-3-opus, gemini-1.5-pro, etc.)'
+    description: 'AI model to use (gpt-4, claude-3-opus, gemini-2.0-flash, etc.)'
     required: false
-    default: 'gemini-1.5-pro'
+    default: 'gemini-2.0-flash'
 
   ai-api-key:
     description: 'API key for the chosen AI provider'

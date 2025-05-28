@@ -62,7 +62,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           ai-provider: ${{ vars.AI_PROVIDER || 'google' }}
-          ai-model: ${{ vars.AI_MODEL || 'gemini-1.5-pro' }}
+          ai-model: ${{ vars.AI_MODEL || 'gemini-2.0-flash' }}
           ai-api-key: ${{ secrets.AI_API_KEY }}
           language: ${{ vars.DOC_LANGUAGE || 'en' }}
         env:
