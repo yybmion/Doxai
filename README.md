@@ -51,7 +51,7 @@ jobs:
           fetch-depth: 0
 
       - name: Generate Documentation
-        uses: yybmion/Doxai@v1.0.2
+        uses: yybmion/Doxai@v1.1.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           ai-provider: 'google'
