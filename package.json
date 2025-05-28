@@ -1,5 +1,5 @@
 {
-  "name": "AutoDoc PR",
+  "name": "CodeScribe AI",
   "version": "1.0.0",
   "description": "GitHub Action that automatically generates documentation for code files in merged PRs using AI",
   "main": "src/main.js",

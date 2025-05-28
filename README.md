@@ -23,10 +23,10 @@
 
 ### 1. Setup Workflow
 
-Create `.github/workflows/doxai.yml`:
+Create `.github/workflows/codeScribeAi.yml`:
 
 ```yaml
-name: Doxai Documentation Generator
+name: CodeScribe AI Documentation
 on:
   issue_comment:
     types: [created]

@@ -1,4 +1,4 @@
-name: AutoDoc PR
+name: CodeScribe AI
 on:
   issue_comment:
     types: [created]
