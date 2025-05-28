@@ -23,10 +23,10 @@
 
 ### 1. 워크플로 설정
 
-`.github/workflows/doxai.yml` 파일 생성:
+`.github/workflows/codeScribeAi.yml` 파일 생성:
 
-```yaml
-name: CodeScribe AI
+name: CodeScribe AI Documentation
+
 on:
   issue_comment:
     types: [created]
