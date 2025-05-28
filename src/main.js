@@ -518,15 +518,6 @@ class DocumentationGenerator {
    * @param {string} language - Documentation language
    * @returns {Promise<string>} - Generated documentation
    */
-  /**
-   * Generate documentation using AI
-   * @param {string} filename - Source file name
-   * @param {string} content - File content
-   * @param {string} existingDoc - Existing documentation if any
-   * @param {object} prDetails - PR details
-   * @param {string} language - Documentation language
-   * @returns {Promise<string>} - Generated documentation
-   */
   async generateDocumentation(filename, content, existingDoc, prDetails, language) {
     this.logger.info(`=== Documentation Generation Debug ===`);
     this.logger.info(`Filename: ${filename}`);
@@ -553,9 +544,48 @@ class DocumentationGenerator {
     const result = await this.aiClient.sendPrompt(systemPrompt, userPrompt);
 
     this.logger.info(`AI response preview: ${result.substring(0, 200)}...`);
+
+    const cleanedResult = this.postProcessDocumentation(result, filename);
+
     this.logger.info(`=== End Documentation Generation Debug ===`);
 
-    return result;
+    return cleanedResult;
+  }
+
+  /**
+   * Post-process generated documentation to fix title
+   * @param {string} docContent - Generated documentation content
+   * @param {string} filename - Source filename with full path
+   * @returns {string} - Processed documentation
+   */
+  postProcessDocumentation(docContent, filename) {
+    const cleanFilename = filename.split('/').pop();
+
+    const lines = docContent.split('\n');
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+
+      if (line.startsWith('= ')) {
+        const currentTitle = line.substring(2).trim();
+
+        if (currentTitle === cleanFilename) {
+          this.logger.debug(`Title already correct: ${currentTitle}`);
+          break;
+        }
+
+        if (currentTitle.includes('/')) {
+          lines[i] = `= ${cleanFilename}`;
+          this.logger.info(`Fixed title from "${currentTitle}" to "${cleanFilename}"`);
+          break;
+        }
+
+        this.logger.debug(`Keeping custom title: ${currentTitle}`);
+        break;
+      }
+    }
+
+    return lines.join('\n');
   }
 
   /**
