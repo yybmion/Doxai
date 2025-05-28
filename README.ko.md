@@ -43,30 +43,21 @@ jobs:
       github.event.issue.pull_request && 
       contains(github.event.comment.body, '!doxai')
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install Dependencies
-        run: npm ci
-
       - name: Generate Documentation
-        uses: yybmion/codescribe-ai@v1
+        uses: yybmion/Doxai@v1.0.2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           ai-provider: 'google'
           ai-model: 'gemini-2.0-flash'
           ai-api-key: ${{ secrets.AI_API_KEY }}
-          language: 'ko'
+
 ```
 
 ### 2. 저장소 설정
