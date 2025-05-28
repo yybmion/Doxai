@@ -127,10 +127,16 @@ class DocsPromptGenerator {
 다음 ${codeLanguage} 파일을 분석하여 **한국어로** AsciiDoc 형식의 기술 문서를 생성해주세요.
 
 ## 🚨 절대적 규칙: 문서 제목
-**반드시 파일명만 사용하세요! 전체 경로 사용 금지!**
+**문서 첫 줄의 제목에는 반드시 파일명(\${filename})만 사용하세요!**
 
-❌ 잘못된 예시: = src/main/java/com/example/demo/service/SignUpService.java
+올바른 형식: = \${filename}
+
+❌ 절대 사용 금지: = \${fullPath}
+❌ 절대 사용 금지: = src/main/java/com/example/demo/service/SignUpService.java
+❌ 절대 사용 금지: = service/SignUpService.java
+
 ✅ 올바른 예시: = SignUpService.java
+✅ 올바른 예시: = UserController.java
 
 ## PR 정보
 - PR 번호: \${prNumber}
@@ -173,10 +179,16 @@ class DocsPromptGenerator {
 다음 ${codeLanguage} PR이 변경되었습니다. 기존 문서를 **자연스러운 한국어로** 업데이트해주세요.
 
 ## 🚨 절대적 규칙: 문서 제목
-**반드시 파일명만 사용하세요! 전체 경로 사용 금지!**
+**문서 첫 줄의 제목에는 반드시 파일명(\${filename})만 사용하세요!**
 
-❌ 잘못된 예시: = src/main/java/com/example/demo/service/SignUpService.java
+올바른 형식: = \${filename}
+
+❌ 절대 사용 금지: = \${fullPath}
+❌ 절대 사용 금지: = src/main/java/com/example/demo/service/SignUpService.java
+❌ 절대 사용 금지: = service/SignUpService.java
+
 ✅ 올바른 예시: = SignUpService.java
+✅ 올바른 예시: = UserController.java
 
 ## PR 정보
 - PR 번호: \${prNumber}
@@ -215,10 +227,16 @@ class DocsPromptGenerator {
 Please analyze the following ${codeLanguage} file and generate technical documentation in AsciiDoc format **in English**.
 
 ## 🚨 ABSOLUTE RULE: Document Title
-**Use ONLY the filename! NO full path allowed!**
+**The document title on the first line MUST use ONLY the filename (\\${filename})!**
 
-❌ Wrong: = src/main/java/com/example/demo/service/SignUpService.java
-✅ Correct: = SignUpService.java
+Correct format: = \${filename}
+
+❌ ABSOLUTELY FORBIDDEN: = \${fullPath}
+❌ ABSOLUTELY FORBIDDEN: = src/main/java/com/example/demo/service/SignUpService.java
+❌ ABSOLUTELY FORBIDDEN: = service/SignUpService.java
+
+✅ Correct example: = SignUpService.java
+✅ Correct example: = UserController.java
 
 ## PR Information
 - PR Number: \${prNumber}
@@ -261,10 +279,16 @@ Please analyze the following ${codeLanguage} file and generate technical documen
 The following ${codeLanguage} file has been modified. Please update the existing documentation **in English**.
 
 ## 🚨 ABSOLUTE RULE: Document Title
-**Use ONLY the filename! NO full path allowed!**
+**The document title on the first line MUST use ONLY the filename (\\${filename})!**
 
-❌ Wrong: = src/main/java/com/example/demo/service/SignUpService.java
-✅ Correct: = SignUpService.java
+Correct format: = \${filename}
+
+❌ ABSOLUTELY FORBIDDEN: = \${fullPath}
+❌ ABSOLUTELY FORBIDDEN: = src/main/java/com/example/demo/service/SignUpService.java
+❌ ABSOLUTELY FORBIDDEN: = service/SignUpService.java
+
+✅ Correct example: = SignUpService.java
+✅ Correct example: = UserController.java
 
 ## PR Information
 - PR Number: \${prNumber}
@@ -312,15 +336,24 @@ The following ${codeLanguage} file has been modified. Please update the existing
       ko: `당신은 코드 문서화 전문가입니다. 제공된 코드 파일을 철저히 분석하여 **자연스럽고 이해하기 쉬운 한국어로** AsciiDoc 형식의 정확하고 유용한 문서를 생성해야 합니다.
 
 ## 🚨🚨🚨 절대적 문서 제목 규칙 🚨🚨🚨
-**문서 제목에는 반드시 파일명만 사용하세요!**
+**절대 잊지 마세요: 문서 제목에는 파일명만 사용하세요!**
 
-❌ 절대 하지 마세요: = src/main/java/com/example/demo/service/SignUpService.java
-❌ 절대 하지 마세요: = com/example/demo/service/SignUpService.java  
-❌ 절대 하지 마세요: = service/SignUpService.java
+문서를 다음과 같이 시작해야 합니다:
+= 파일명.확장자
 
-✅ 반드시 이렇게: = SignUpService.java
-✅ 반드시 이렇게: = UserController.java
-✅ 반드시 이렇게: = DatabaseConfig.java
+예시:
+- = SignUpService.java
+- = UserController.java
+- = app.js
+- = main.py
+
+절대로 다음과 같이 하지 마세요:
+- = src/main/java/com/example/demo/service/SignUpService.java ❌
+- = com/example/demo/service/SignUpService.java ❌
+- = service/SignUpService.java ❌
+- = any/path/SignUpService.java ❌
+
+**경로가 포함된 제목은 절대 사용하지 마세요!**
 
 **이 규칙을 절대 위반하지 마세요!**
 
@@ -365,17 +398,24 @@ ${this.getAsciiDocTemplate()}`,
       en: `You are a code documentation expert. You need to thoroughly analyze the provided code file and generate precise and useful documentation **in English** in AsciiDoc format.
 
 ## 🚨🚨🚨 ABSOLUTE Document Title Rules 🚨🚨🚨
-**Document title MUST use filename only!**
+**NEVER FORGET: Document title must use filename only!**
 
-❌ NEVER do this: = src/main/java/com/example/demo/service/SignUpService.java
-❌ NEVER do this: = com/example/demo/service/SignUpService.java  
-❌ NEVER do this: = service/SignUpService.java
+Your document MUST start like this:
+= filename.extension
 
-✅ ALWAYS do this: = SignUpService.java
-✅ ALWAYS do this: = UserController.java
-✅ ALWAYS do this: = DatabaseConfig.java
+Examples:
+- = SignUpService.java
+- = UserController.java
+- = app.js
+- = main.py
 
-**NEVER violate this rule!**
+NEVER do this:
+- = src/main/java/com/example/demo/service/SignUpService.java ❌
+- = com/example/demo/service/SignUpService.java ❌
+- = service/SignUpService.java ❌
+- = any/path/SignUpService.java ❌
+
+**NEVER use paths in the title!**
 
 ### Writing Style
 - Explain complex technical terms in simple language
