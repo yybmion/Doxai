@@ -8,6 +8,8 @@
 
 ## ✨ 주요 기능
 
+[전체 기능 가이드 보기](./FEATURES.ko.md)
+
 - **AI 기반 분석**: OpenAI GPT, Anthropic Claude, Google Gemini, Azure OpenAI 활용
 - **스마트 문서화**: AsciiDoc 형식의 상세한 기술 문서 생성
 - **지능형 업데이트**: 마지막 문서화 이후 실제로 변경된 파일만 처리
@@ -131,9 +133,7 @@ PR 병합 후 다음과 같이 댓글 작성:
 ai-provider: 'google'
 ai-model: 'gemini-2.0-flash'  # 또는 gemini-1.5-flash
 ```
-- 빠르고 비용 효율적
-- 뛰어난 코드 이해력
-- 우수한 다국어 지원
+
 </details>
 
 <details>
@@ -143,9 +143,7 @@ ai-model: 'gemini-2.0-flash'  # 또는 gemini-1.5-flash
 ai-provider: 'openai'
 ai-model: 'gpt-4'  # 또는 gpt-3.5-turbo
 ```
-- 고품질 출력
-- 포괄적인 분석
-- 프리미엄 가격
+
 </details>
 
 <details>
@@ -155,9 +153,7 @@ ai-model: 'gpt-4'  # 또는 gpt-3.5-turbo
 ai-provider: 'anthropic'
 ai-model: 'claude-3-opus'  # 또는 claude-3-sonnet, claude-3-haiku
 ```
-- 상세한 설명
-- 강력한 추론 능력
-- 맥락 인식 문서화
+
 </details>
 
 ## 📁 지원하는 파일 형식
