@@ -59,7 +59,7 @@ jobs:
         run: npm ci
 
       - name: Generate Documentation
-        uses: yybmion/codescribe-ai@v1.0.0
+        uses: yybmion/codescribe-ai@v1.0.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           ai-provider: 'google'
