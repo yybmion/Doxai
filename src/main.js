@@ -510,12 +510,12 @@ class DocumentationGenerator {
   }
 
   /**
-   * Generate documentation using AI
+   * Generate documentation using AI with language group templates
    * @param {string} filename - Source file name
    * @param {string} content - File content
    * @param {string} existingDoc - Existing documentation if any
    * @param {object} prDetails - PR details
-   * @param {string} language - Documentation language
+   * @param {string} language - Documentation language (ko/en)
    * @returns {Promise<string>} - Generated documentation
    */
   async generateDocumentation(filename, content, existingDoc, prDetails, language) {
@@ -524,23 +524,33 @@ class DocumentationGenerator {
     this.logger.info(`Language: ${language}`);
     this.logger.info(`Has existing doc: ${!!existingDoc}`);
 
-    const systemPrompt = docsPromptTemplates[language] || docsPromptTemplates.en || '';
+    // Use new template system with language group detection
+    const { getSystemPrompt, createDocsPrompt, createUpdateDocsPrompt, getLanguageGroup } = require('./docs-prompt');
 
+    // Detect language group based on file extension
+    const languageGroup = getLanguageGroup(filename);
+    this.logger.info(`Language group: ${languageGroup}`);
+
+    // Get specialized system prompt for this file type and documentation language
+    const systemPrompt = getSystemPrompt(filename, language);
     this.logger.info(`System prompt language: ${language}`);
     this.logger.debug(`System prompt preview: ${systemPrompt.substring(0, 200)}...`);
 
     let userPrompt;
     if (existingDoc) {
+      // Update existing documentation
       userPrompt = createUpdateDocsPrompt(filename, content, existingDoc, prDetails, language);
       this.logger.info('Using update prompt template');
     } else {
+      // Create new documentation
       userPrompt = createDocsPrompt(filename, content, prDetails, language);
       this.logger.info('Using create prompt template');
     }
 
     this.logger.debug(`User prompt preview: ${userPrompt.substring(0, 300)}...`);
-    this.logger.info(`Sending AI request with language: ${language}`);
+    this.logger.info(`Sending AI request with language: ${language}, group: ${languageGroup}`);
 
+    // Send specialized prompts to AI
     const result = await this.aiClient.sendPrompt(systemPrompt, userPrompt);
 
     this.logger.info(`AI response preview: ${result.substring(0, 200)}...`);

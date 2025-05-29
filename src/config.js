@@ -66,7 +66,11 @@ class Config {
         '.pdf', '.zip', '.tar', '.gz', '.rar',
         '.exe', '.dll', '.so', '.dylib',
         '.env', '.env.local', '.env.production',
-        'package-lock.json', 'yarn.lock', 'composer.lock'
+        'package-lock.json', 'yarn.lock', 'composer.lock',
+
+        '.json', '.yaml', '.yml', '.toml', '.ini', '.conf', '.xml',
+        '.md', '.rst', '.adoc', '.txt',
+        '.sh', '.bash', '.zsh', '.fish', '.ps1', '.psm1', '.bat', '.cmd'
       ],
       specialFiles: new Set([
         'dockerfile', 'makefile', 'rakefile', 'gemfile',
