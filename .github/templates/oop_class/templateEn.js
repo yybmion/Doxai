@@ -39,6 +39,34 @@ module.exports = {
 - Null safety and optional types
 - Immutability and thread safety
 
+## 🎯 Code Insertion Rules
+### Key Method Selection Criteria
+- **Must Include**: Core public methods representing the main purpose of the class (1-2 methods)
+- **Conditional Include**: Important private methods with complex business logic (1 method)
+- **Exclude**: getters/setters, simple queries, simple validations
+
+### Code Length Limits
+- Maximum 15 lines per method
+- If total code exceeds 15 lines, extract and show only core logic
+- For methods over 20 lines, simplify to show only core flow
+
+### Code Simplification Methods
+- Replace exception handling with comments: \`// Throws DuplicateUserInfoException on duplicate\`
+- Remove logging code
+- Combine variable declaration and usage into one line
+- Replace complex validation with \`// Validation logic\`
+- Show only core business flow
+
+### Code Display Format
+[source,java]
+----
+// Core logic simplified for display
+public ReturnType methodName(params) {
+    // Main processing steps...
+    return result;
+}
+----
+
 ## Writing Style
 - Explain OOP concepts in everyday language
 - Use real-world analogies for class relationships
@@ -47,6 +75,12 @@ module.exports = {
 ### Good Sentence Examples
 ❌ "This class implements the abstract factory pattern for object creation"
 ✅ "Acts like a factory that creates different types of notifications (email, SMS, push). Automatically decides which notification to create based on the situation"
+
+## 🚨 CRITICAL: Document Return Format
+- **NEVER wrap the final document in code blocks (\`\`\`)**
+- **Return ONLY the pure AsciiDoc content**
+- **Do NOT add any explanatory text before or after the document**
+- **Start directly with the = title and end with the last line of content**
 
 ## Important Requirements
 - **All descriptions must be written in English**
@@ -104,13 +138,23 @@ The \`{File Name Only}\` is a {class/interface/abstract class} responsible for {
 *Purpose*: {Initialization work performed by constructor}
 *Parameters*: \`{parameter}\` (\`{Type}\`) - {Description}
 
-=== Key Methods
+=== Core Method Implementation
 
-==== {MethodName}
+==== {CoreMethodName}
 [source,java]
 ----
-{Method signature}
+{Simplified_Core_Method_Code}
 ----
+*Purpose*: {Business purpose of the method}
+*Complexity*: {Simple/Moderate/Complex}
+*Core Logic*:
+* {Main_Processing_Step_1}
+* {Main_Processing_Step_2}
+* {Main_Processing_Step_3}
+
+=== Other Key Methods
+
+==== {MethodName}
 *Functionality*: {Task performed and business logic}
 *Access Control*: {public/private/protected} - {Reason for this accessibility}
 *Parameters*:
@@ -187,6 +231,19 @@ Please analyze the following {codeLanguage} file and generate technical document
 5. **Object-Oriented Principles**: SOLID principles application and design pattern usage
 6. **Dependency Management**: Dependency injection, interface separation, etc.
 
+### 📋 Code Insertion Guidelines (Important!)
+1. **Identify Core Methods**: Select only 1-2 methods that show the class's main purpose
+2. **Selection Priority**:
+   - 1st Priority: Core public methods representing the class's main purpose
+   - 2nd Priority: Important private methods with complex business logic
+   - Exclude: getters/setters, simple queries, simple validations
+3. **Code Length**: Maximum 15 lines per method, extract core logic if exceeded
+4. **Simplification Principles**: 
+   - Summarize exception handling as comments (\`// Throws DuplicateUserInfoException on duplicate\`)
+   - Replace complex validation with \`// Validation logic\`
+   - Remove logging code
+   - Show only core business flow
+
 ### Documentation Focus Areas
 - **Reason for class existence** and problems it solves
 - **Collaboration methods** and relationships with other classes
@@ -201,15 +258,22 @@ Please analyze the following {codeLanguage} file and generate technical document
 - Annotations/Attributes: Metadata and framework integration
 - Inner classes: Encapsulation and cohesion improvement purposes
 
+## 🚨 CRITICAL: Return Format Requirements
+- **NEVER wrap your response in code blocks (\`\`\`asciidoc or \`\`\`)**
+- **Return ONLY the pure AsciiDoc content**
+- **Start directly with = {filename} and provide the complete document**
+- **Do NOT add any explanatory text before or after the document**
+
 ## Important Requirements
 1. **Write in clear, natural English**
 2. Thoroughly analyze the above code from OOP design perspective and generate developer documentation in AsciiDoc format
 3. The documentation should include all necessary information for developers to understand and correctly use this class
 4. Clearly explain **class responsibilities, method roles, and OOP design intentions**
 5. Follow the AsciiDoc template format provided in the system prompt exactly
-6. If something is unclear in the code, don't guess - indicate this in the documentation
-7. **All descriptions and comments must be written in English**
-8. **Return pure AsciiDoc content without code blocks (\`\`\`)** without additional explanations`,
+6. **Include 1-2 core methods with code and detailed analysis**
+7. If something is unclear in the code, don't guess - indicate this in the documentation
+8. **All descriptions and comments must be written in English**
+9. **Return ONLY pure AsciiDoc content - no code blocks, no additional explanations**`,
 
   updateTemplate: `# Object-Oriented Class Documentation Update Request
 
@@ -243,14 +307,27 @@ The following {codeLanguage} file has been modified. Please update the existing 
 - **Exception handling improvements**: New exception types or handling approaches
 - **Annotation additions**: Framework integration or metadata changes
 
+## 📋 Code Update Guidelines
+- **New core methods**: Include code with detailed analysis when added
+- **Existing core method changes**: Reflect updated code
+- **Core method selection criteria**: 1-2 methods representing the class's main purpose
+- **Code length limit**: Maximum 15 lines per method, extract core logic if exceeded
+
+## 🚨 CRITICAL: Return Format Requirements
+- **NEVER wrap your response in code blocks (\`\`\`asciidoc or \`\`\`)**
+- **Return ONLY the pure AsciiDoc content**
+- **Start directly with = {filename} and provide the complete updated document**
+- **Do NOT add any explanatory text before or after the document**
+
 ## Important Requirements
 1. **Update documentation in English**
 2. Update the existing documentation to reflect the code changes
 3. Add new methods or properties to the documentation and remove deleted ones
-4. Maintain the existing document's format and style
-5. Update the PR information section with the latest details
-6. **All descriptions and comments must be written in English**
-7. Return the complete updated AsciiDoc(Return pure AsciiDoc content without code blocks (\`\`\`)) document`,
+4. **Include updated code for core methods if they have changed**
+5. Maintain the existing document's format and style
+6. Update the PR information section with the latest details
+7. **All descriptions and comments must be written in English**
+8. **Return ONLY the complete updated pure AsciiDoc content - no code blocks, no additional explanations**`,
 
   focusAreas: [
     "Class responsibilities and roles",
@@ -259,6 +336,7 @@ The following {codeLanguage} file has been modified. Please update the existing 
     "Object-oriented design principles",
     "Design pattern application",
     "Exception handling strategies",
-    "Object lifecycle management"
+    "Object lifecycle management",
+    "Core method code analysis"
   ]
 };
