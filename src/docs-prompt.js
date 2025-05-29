@@ -47,12 +47,6 @@ class DocsPromptGenerator {
     };
 
     // Template file names for different documentation languages
-    // Each language group folder contains these files:
-    // templates/oop_class/templateKo.js (Korean templates)
-    // templates/oop_class/templateEn.js (English templates)
-    // templates/functional/templateKo.js (Korean templates)
-    // templates/functional/templateEn.js (English templates)
-    // etc...
     this.templateFileNames = {
       ko: 'templateKo.js',  // Korean documentation templates
       en: 'templateEn.js'   // English documentation templates

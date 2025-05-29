@@ -4,20 +4,113 @@
 
 *[English](./README.md) | [한국어](./README.ko.md)*
 
-**Doxai** is an intelligent GitHub Action that automatically generates comprehensive technical documentation for your code changes when PRs are merged. Powered by advanced AI models, it creates detailed AsciiDoc documentation that helps developers understand and maintain codebases more effectively.
+**Doxai** is an intelligent GitHub Action that automatically generates comprehensive technical documentation for your code changes when PRs are merged. Powered by advanced AI models and **language-specific analysis templates**, it creates detailed AsciiDoc documentation tailored to each programming language's unique characteristics.
 
 ## ✨ Key Features
 
 [Doxai Core Features Guide](./FEATURES.md)
 
-- **AI-Powered Analysis**: Leverages OpenAI GPT, Anthropic Claude, Google Gemini, or Azure OpenAI
+- **🧠 Language-Specific AI Analysis**: Specialized templates for different programming paradigms
+    - **Object-Oriented**: Java, C#, Kotlin, Scala, Swift (focuses on classes, inheritance, design patterns)
+    - **Functional**: JavaScript, TypeScript, Python, Go, Rust, Dart (emphasizes functions, data flow, async patterns)
+    - **Web Frontend**: HTML, CSS, SCSS, Vue, Svelte (UI/UX, responsiveness, accessibility)
+    - **Data & Queries**: SQL, CSV (business context, performance, data quality)
+    - **Systems**: C, C++, Headers (memory management, performance, system interfaces)
+- **Multiple AI Providers**: OpenAI GPT, Anthropic Claude, Google Gemini support
 - **Smart Documentation**: Generates detailed technical documentation in AsciiDoc format
 - **Intelligent Updates**: Only processes files that have actually changed since last documentation
-- **Multi-language Support**: Generate documentation in English or Korean
+- **Multi-language Support**: Generate documentation in English or Korean with native-quality writing
 - **Flexible Filtering**: Include/exclude files based on patterns and scopes
 - **Batch Processing**: Efficiently handles multiple files in single commits
 - **PR Reuse**: Updates existing documentation PRs instead of creating duplicates
 - **Folder Structure**: Organizes documentation with proper folder hierarchies
+
+## 🎯 Language-Specific Analysis
+
+### Object-Oriented Languages (Java, C#, Kotlin, Scala, Swift)
+```asciidoc
+= UserService Class Documentation
+
+== Class Hierarchy
+=== Inheritance Relationships
+* *Parent Class*: `BaseService` - Provides common service functionality
+* *Implemented Interfaces*: `Authenticatable` - User authentication contract
+
+== Object-Oriented Design Features
+=== Applied Design Principles
+* *Single Responsibility Principle*: Handles only user-related operations
+* *Dependency Injection*: Dependencies injected through constructor
+
+=== Used Design Patterns
+* *Factory Pattern*: Creates different user types based on roles
+```
+
+### Functional Languages (JS, TS, Python, Go, Rust, Dart)
+```asciidoc
+= Utils Module Documentation
+
+== Data Transformation Flow
+=== Input Data Format
+* Raw user data from API responses
+
+=== Transformation Process
+1. Validates required fields
+2. Normalizes email format
+3. Encrypts sensitive information
+
+== Functional Programming Features
+=== Higher-Order Function Usage
+* `mapUsers` - Transforms user objects using provided mapping function
+* `filterActive` - Filters users based on activity status
+```
+
+### Web Frontend (HTML, CSS, Vue, Svelte)
+```asciidoc
+= LoginForm Component Documentation
+
+== UI Structure and Layout
+=== Visual Composition
+* *Layout*: CSS Grid with responsive breakpoints
+* *Arrangement*: Centered form with validation feedback
+
+== Accessibility
+=== Keyboard Navigation
+* Tab order follows logical form flow
+* Enter key submits form
+=== Screen Reader Support
+* All inputs have descriptive labels
+* Error messages announced to screen readers
+```
+
+### Data & Queries (SQL, CSV)
+```asciidoc
+= User Analytics Query Documentation
+
+== Business Context
+=== Use Cases
+* Monthly user engagement reporting
+* Customer retention analysis
+
+== Query Logic
+=== Performance Considerations
+* *Indexes*: Composite index on (user_id, created_at) for optimal performance
+* *Execution Time*: ~200ms on 1M user dataset
+```
+
+### Systems Programming (C, C++)
+```asciidoc
+= Memory Pool Implementation Documentation
+
+== Memory Management
+=== Allocation Strategy
+* *Dynamic Allocation*: Pre-allocates large memory blocks
+* *Deallocation*: Marks blocks as free without immediate system calls
+
+== Performance Characteristics
+=== Time Complexity
+* Allocation: O(1) average case
+* Deallocation: O(1)
+```
 
 ## 🚀 Quick Start
 
@@ -51,13 +144,12 @@ jobs:
           fetch-depth: 0
 
       - name: Generate Documentation
-        uses: yybmion/Doxai@v1.1.0
+        uses: yybmion/Doxai@v1.2.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           ai-provider: 'google'
           ai-model: 'gemini-2.0-flash'
           ai-api-key: ${{ secrets.AI_API_KEY }}
-
 ```
 
 ### 2. Configure Repository
@@ -91,7 +183,7 @@ After merging a PR, comment with:
 ### Examples
 
 ```bash
-# Generate docs for all files in English
+# Generate docs for all files in English (automatic language detection)
 !doxai
 
 # Generate docs for specific directories in Korean
@@ -100,8 +192,8 @@ After merging a PR, comment with:
 # Exclude test files and generate in Korean
 !doxai --scope exclude:test,spec --lang ko
 
-# Include only JavaScript files
-!doxai --scope include:*.js
+# Include only specific file types
+!doxai --scope include:*.java,*.js
 ```
 
 ## ⚙️ Configuration
@@ -154,58 +246,70 @@ ai-model: 'claude-3-opus'  # or claude-3-sonnet, claude-3-haiku
 - Context-aware documentation
 </details>
 
-## 📁 Supported File Types
+## 📁 Supported File Types & Analysis
 
-### Programming Languages
-- **JavaScript/TypeScript**: `.js`, `.jsx`, `.ts`, `.tsx`
-- **Python**: `.py`, `.pyw`
-- **Java/JVM**: `.java`, `.kt`, `.scala`
-- **C/C++**: `.c`, `.cpp`, `.h`, `.hpp`
-- **Others**: `.cs`, `.rs`, `.go`, `.rb`, `.php`, `.swift`, `.dart`, `.r`
+### 🎯 Object-Oriented Languages
+- **Java** (`.java`) → Class hierarchy, design patterns, inheritance analysis
+- **C#** (`.cs`) → SOLID principles, properties, async patterns
+- **Kotlin** (`.kt`) → Data classes, extension functions, coroutines
+- **Scala** (`.scala`) → Functional OOP hybrid, case classes, traits
+- **Swift** (`.swift`) → Protocols, optionals, memory management
 
-### Web Technologies
-- **Markup**: `.html`, `.htm`
-- **Styling**: `.css`, `.scss`, `.sass`, `.less`
-- **Frameworks**: `.vue`, `.svelte`
+### ⚡ Functional Languages
+- **JavaScript** (`.js`, `.jsx`) → Function composition, closures, async/await
+- **TypeScript** (`.ts`, `.tsx`) → Type safety, generics, interfaces
+- **Python** (`.py`, `.pyw`) → Generators, decorators, comprehensions
+- **Go** (`.go`) → Goroutines, channels, interfaces
+- **Rust** (`.rs`) → Ownership, lifetimes, pattern matching
+- **Dart** (`.dart`) → Futures, streams, widgets
 
-### Configuration & Scripts
-- **Data**: `.json`, `.yaml`, `.yml`, `.xml`
-- **Scripts**: `.sh`, `.bash`, `.ps1`, `.bat`
-- **Build**: `Dockerfile`, `Makefile`, `.gradle`
+### 🎨 Web Frontend
+- **HTML** (`.html`, `.htm`) → Semantic structure, accessibility, SEO
+- **CSS** (`.css`, `.scss`, `.sass`, `.less`) → Responsive design, animations
+- **Vue** (`.vue`) → Component composition, reactivity, lifecycle
+- **Svelte** (`.svelte`) → Compile-time optimization, stores
 
-### Documentation
-- **Text**: `.md`, `.rst`, `.adoc`, `.txt`
+### 📊 Data & Queries
+- **SQL** (`.sql`) → Query optimization, business logic, performance
+- **CSV** (`.csv`) → Data structure, quality assessment, usage patterns
+
+### ⚙️ Systems Programming
+- **C** (`.c`, `.h`) → Memory management, system calls, performance
+- **C++** (`.cpp`, `.hpp`) → RAII, templates, STL usage
+
+### 🚫 Excluded by Default
+- Configuration files (`.json`, `.yaml`, `.xml`, `.toml`)
+- Scripts (`.sh`, `.bat`, `.ps1`)
+- Documentation (`.md`, `.rst`, `.txt`)
 
 ## 🧠 Smart Features
 
-### Intelligent File Processing
+### Intelligent Language Detection
 
-Doxai automatically:
-- ✅ **Detects Changes**: Only processes files modified since last documentation
-- ✅ **Skips Unchanged**: Avoids redundant processing for unchanged files
-- ✅ **Batch Commits**: Groups multiple file changes into single commits
-- ✅ **Folder Structure**: Creates organized documentation hierarchies
+Doxai automatically detects your programming language and applies specialized analysis:
 
-### Example Output
-
-```asciidoc
-= UserService Class Documentation
-
-== Overview
-The `UserService` class manages user authentication and profile operations...
-
-== Dependencies
-* `bcrypt` - Password hashing and verification
-* `jwt` - JSON Web Token handling
-
-== Key Methods
-=== authenticate(email, password)
-*Purpose*: Authenticates user credentials and returns JWT token
-*Parameters*: 
-* `email` - User email address
-* `password` - Plain text password
-*Return Value*: JWT token string or null if authentication fails
 ```
+UserService.java → Object-Oriented Expert
+├── Analyzes class hierarchy and design patterns
+├── Focuses on SOLID principles and inheritance
+└── Documents method contracts and exceptions
+
+utils.js → Functional Programming Expert  
+├── Examines function composition and data flow
+├── Analyzes async patterns and error handling
+└── Documents pure functions vs side effects
+
+LoginForm.vue → Frontend UI/UX Expert
+├── Reviews component structure and props
+├── Evaluates accessibility and responsiveness  
+└── Documents user interactions and state management
+```
+
+### Cost-Effective Processing
+
+- **Smart Targeting**: Only the relevant template for each file type
+- **90% Token Savings**: No irrelevant analysis templates sent to AI
+- **Batch Processing**: Multiple files processed in single commits
 
 ## 📊 Workflow Results
 
@@ -217,10 +321,15 @@ After running, Doxai provides detailed feedback:
 📚 Documentation PR: #156 (created)
 
 📊 Summary:
-- Generated: 3 files
+- Generated: 3 files (Java→OOP, JS→Functional, Vue→Frontend)
 - Updated: 2 files  
 - Skipped: 1 file (unchanged)
 - Failed: 0 files
+
+Language Groups Processed:
+🎯 oop_class: 1 file (specialized class analysis)
+⚡ functional: 1 file (function-focused documentation)  
+🎨 web_frontend: 1 file (UI/UX comprehensive review)
 
 🔗 View Documentation: https://github.com/owner/repo/pull/156
 ```
@@ -236,6 +345,12 @@ After running, Doxai provides detailed feedback:
 - Large files (>50KB) may be truncated for AI processing
 - Complex code structures might require manual review
 - API rate limits may affect processing speed
+- Config/script/documentation files are excluded by default (can be customized)
+
+### Language-Specific Considerations
+- **Mixed Projects**: Each file gets appropriate specialized analysis
+- **Fallback Behavior**: Unknown extensions default to functional analysis
+- **Template Customization**: Advanced users can modify analysis templates
 
 ## 🤝 Contributing
 
@@ -255,4 +370,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Made with ❤️ by [yybmion](https://github.com/yybmion)**
 
-*Star ⭐ this repo if you find it helpful!
+*Star ⭐ this repo if you find it helpful!*
