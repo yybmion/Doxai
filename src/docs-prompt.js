@@ -3,7 +3,7 @@ const config = require('./config');
 const Logger = require('./logger');
 
 /**
- * Documentation prompt templates and generators with language group support
+ * Documentation prompt templates and generators with embedded templates
  */
 class DocsPromptGenerator {
   constructor() {
@@ -46,12 +46,6 @@ class DocsPromptGenerator {
       'hpp': 'native'
     };
 
-    // Template file names for different documentation languages
-    this.templateFileNames = {
-      ko: 'templateKo.js',  // Korean documentation templates
-      en: 'templateEn.js'   // English documentation templates
-    };
-
     // Language mappings for code syntax highlighting
     this.codeLanguageMap = {
       'java': 'Java',
@@ -80,57 +74,43 @@ class DocsPromptGenerator {
       'r': 'R'
     };
 
-    // Load all templates at initialization
-    this.templates = this.loadTemplates();
+    // Embedded templates - all templates directly in code
+    this.templates = this.getEmbeddedTemplates();
   }
 
   /**
-   * Load all language group templates from the templates directory
-   *
-   * File structure:
-   * templates/
-   *   oop_class/
-   *     templateKo.js  <- Korean OOP templates
-   *     templateEn.js  <- English OOP templates
-   *   functional/
-   *     templateKo.js  <- Korean functional templates
-   *     templateEn.js  <- English functional templates
-   *   ...
-   *
-   * @returns {object} - Loaded templates organized by [group][language]
+   * Get all embedded templates
+   * @returns {object} - All templates organized by [group][language]
    */
-  loadTemplates() {
-    const templates = {};
-    const templateDir = path.join(__dirname, '..', 'templates');
-
-    // All supported language groups
-    const groups = ['oop_class', 'functional', 'web_frontend', 'data', 'native'];
-    const languages = Object.keys(this.templateFileNames); // ['ko', 'en']
-
-    for (const group of groups) {
-      templates[group] = {};
-      for (const lang of languages) {
-        try {
-          const fileName = this.templateFileNames[lang];
-          // Full path: templates/oop_class/templateKo.js
-          const templatePath = path.join(templateDir, group, fileName);
-          templates[group][lang] = require(templatePath);
-          this.logger.debug(`Loaded template: ${group}/${fileName}`);
-        } catch (error) {
-          this.logger.error(`Failed to load template ${group}/${this.templateFileNames[lang]}`, error);
-          // Use fallback template if loading fails
-          templates[group][lang] = this.getDefaultTemplate(lang);
-        }
+  getEmbeddedTemplates() {
+    return {
+      oop_class: {
+        ko: require('./templates/oop-class-ko'),
+        en: require('./templates/oop-class-en')
+      },
+      functional: {
+        ko: require('./templates/functional-ko'),
+        en: require('./templates/functional-en')
+      },
+      web_frontend: {
+        ko: require('./templates/web-frontend-ko'),
+        en: require('./templates/web-frontend-en')
+      },
+      data: {
+        ko: require('./templates/data-ko'),
+        en: require('./templates/data-en')
+      },
+      native: {
+        ko: require('./templates/native-ko'),
+        en: require('./templates/native-en')
       }
-    }
-
-    return templates;
+    };
   }
 
   /**
    * Determine language group based on file extension
    * @param {string} filename - File name with extension
-   * @returns {string} - Language group name (e.g., 'oop_class', 'functional')
+   * @returns {string} - Language group name
    */
   getLanguageGroup(filename) {
     const extension = path.extname(filename).slice(1).toLowerCase();
@@ -138,7 +118,7 @@ class DocsPromptGenerator {
 
     if (!group) {
       this.logger.warn(`No language group found for extension: ${extension}, using functional as default`);
-      return 'functional'; // Default fallback
+      return 'functional';
     }
 
     return group;
@@ -274,52 +254,31 @@ class DocsPromptGenerator {
   }
 
   /**
-   * Get default template as fallback
-   * @param {string} language - Documentation language
-   * @returns {object} - Default template structure
-   */
-  getDefaultTemplate(language) {
-    return {
-      systemPrompt: this.getDefaultSystemPrompt(language),
-      createTemplate: language === 'ko'
-          ? `# 코드 문서화 요청\n다음 파일을 분석하여 한국어로 AsciiDoc 문서를 생성해주세요.\n\n## 코드\n\`\`\`\n\${fileContent}\n\`\`\``
-          : `# Code Documentation Request\nPlease analyze the following file and generate AsciiDoc documentation in English.\n\n## Code\n\`\`\`\n\${fileContent}\n\`\`\``,
-      updateTemplate: language === 'ko'
-          ? `# 문서 업데이트 요청\n변경된 파일의 기존 문서를 업데이트해주세요.`
-          : `# Documentation Update Request\nPlease update the existing documentation for the changed file.`,
-      focusAreas: ['Code structure', 'Functionality', 'Usage']
-    };
-  }
-
-  /**
    * Get default create prompt as fallback
    */
   getDefaultCreatePrompt(filename, fileContent, prDetails, language) {
-    const template = this.getDefaultTemplate(language);
-    return template.createTemplate.replace(/\${fileContent}/g, fileContent);
+    const languageTemplate = language === 'ko'
+        ? `# 코드 문서화 요청\n다음 파일을 분석하여 한국어로 AsciiDoc 문서를 생성해주세요.\n\n## 코드\n\`\`\`\n${fileContent}\n\`\`\``
+        : `# Code Documentation Request\nPlease analyze the following file and generate AsciiDoc documentation in English.\n\n## Code\n\`\`\`\n${fileContent}\n\`\`\``;
+
+    return languageTemplate;
   }
 
   /**
    * Get default update prompt as fallback
    */
   getDefaultUpdatePrompt(filename, fileContent, existingDocContent, prDetails, language) {
-    const template = this.getDefaultTemplate(language);
-    return template.updateTemplate;
+    return language === 'ko'
+        ? `# 문서 업데이트 요청\n변경된 파일의 기존 문서를 업데이트해주세요.`
+        : `# Documentation Update Request\nPlease update the existing documentation for the changed file.`;
   }
 }
 
 // Create singleton instance
 const promptGenerator = new DocsPromptGenerator();
 
-// Export compatibility functions (maintain existing interface)
+// Export compatibility functions
 module.exports = {
-  // Legacy template export for backward compatibility (deprecated)
-  docsPromptTemplates: {
-    ko: promptGenerator.getSystemPrompt('dummy.js', 'ko'),
-    en: promptGenerator.getSystemPrompt('dummy.js', 'en')
-  },
-
-  // Main functions - now automatically detect language groups
   createDocsPrompt: (filename, fileContent, prDetails, language = 'en') => {
     console.log(`[DocsPrompt] Creating docs prompt for language: ${language}, file: ${filename}`);
     return promptGenerator.createDocsPrompt(filename, fileContent, prDetails, language);
@@ -330,16 +289,13 @@ module.exports = {
     return promptGenerator.createUpdateDocsPrompt(filename, fileContent, existingDocContent, prDetails, language);
   },
 
-  // Get system prompt for specific file (new function)
   getSystemPrompt: (filename, language = 'en') => {
     return promptGenerator.getSystemPrompt(filename, language);
   },
 
-  // Get language group information (for debugging)
   getLanguageGroup: (filename) => {
     return promptGenerator.getLanguageGroup(filename);
   },
 
-  // Export prompt generator instance
   DocsPromptGenerator
 };

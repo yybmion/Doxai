@@ -1,5 +1,3 @@
-// templates/data/templateKo.js
-
 module.exports = {
   systemPrompt: `당신은 데이터 파일 및 SQL 문서화 전문가입니다. 
 데이터 구조, 쿼리, 스키마에 특화된 문서를 작성해야 합니다.

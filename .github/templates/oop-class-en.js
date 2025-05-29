@@ -1,5 +1,3 @@
-// templates/oop_class/templateEn.js
-
 module.exports = {
   systemPrompt: `You are an object-oriented programming documentation expert specializing in class-based design and OOP principles.
 

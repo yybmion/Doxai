@@ -19,70 +19,70 @@ jest.mock('../../src/config', () => ({
 }));
 
 // Mock template files to avoid file system dependencies
-jest.mock('../../templates/oop_class/templateKo.js', () => ({
+jest.mock('../../templates/oop_class/oop-class-ko.js', () => ({
   systemPrompt: 'Mock Korean OOP system prompt',
   createTemplate: 'Mock Korean OOP create template for {codeLanguage}',
   updateTemplate: 'Mock Korean OOP update template',
   focusAreas: ['클래스 구조', '상속']
 }), { virtual: true });
 
-jest.mock('../../templates/oop_class/templateEn.js', () => ({
+jest.mock('../../templates/oop_class/oop-class-en.js', () => ({
   systemPrompt: 'Mock English OOP system prompt',
   createTemplate: 'Mock English OOP create template for {codeLanguage}',
   updateTemplate: 'Mock English OOP update template',
   focusAreas: ['Class structure', 'Inheritance']
 }), { virtual: true });
 
-jest.mock('../../templates/functional/templateKo.js', () => ({
+jest.mock('../../templates/functional/oop-class-ko.js', () => ({
   systemPrompt: 'Mock Korean functional system prompt',
   createTemplate: 'Mock Korean functional create template for {codeLanguage}',
   updateTemplate: 'Mock Korean functional update template',
   focusAreas: ['함수 조합', '비동기 처리']
 }), { virtual: true });
 
-jest.mock('../../templates/functional/templateEn.js', () => ({
+jest.mock('../../templates/functional/oop-class-en.js', () => ({
   systemPrompt: 'Mock English functional system prompt',
   createTemplate: 'Mock English functional create template for {codeLanguage}',
   updateTemplate: 'Mock English functional update template',
   focusAreas: ['Function composition', 'Async processing']
 }), { virtual: true });
 
-jest.mock('../../templates/web_frontend/templateKo.js', () => ({
+jest.mock('../../templates/web_frontend/oop-class-ko.js', () => ({
   systemPrompt: 'Mock Korean web frontend system prompt',
   createTemplate: 'Mock Korean web frontend create template for {codeLanguage}',
   updateTemplate: 'Mock Korean web frontend update template',
   focusAreas: ['UI 구조', '반응형']
 }), { virtual: true });
 
-jest.mock('../../templates/web_frontend/templateEn.js', () => ({
+jest.mock('../../templates/web_frontend/oop-class-en.js', () => ({
   systemPrompt: 'Mock English web frontend system prompt',
   createTemplate: 'Mock English web frontend create template for {codeLanguage}',
   updateTemplate: 'Mock English web frontend update template',
   focusAreas: ['UI structure', 'Responsive design']
 }), { virtual: true });
 
-jest.mock('../../templates/data/templateKo.js', () => ({
+jest.mock('../../templates/data/oop-class-ko.js', () => ({
   systemPrompt: 'Mock Korean data system prompt',
   createTemplate: 'Mock Korean data create template for {codeLanguage}',
   updateTemplate: 'Mock Korean data update template',
   focusAreas: ['데이터 구조', '쿼리 성능']
 }), { virtual: true });
 
-jest.mock('../../templates/data/templateEn.js', () => ({
+jest.mock('../../templates/data/oop-class-en.js', () => ({
   systemPrompt: 'Mock English data system prompt',
   createTemplate: 'Mock English data create template for {codeLanguage}',
   updateTemplate: 'Mock English data update template',
   focusAreas: ['Data structure', 'Query performance']
 }), { virtual: true });
 
-jest.mock('../../templates/native/templateKo.js', () => ({
+jest.mock('../../templates/native/oop-class-ko.js', () => ({
   systemPrompt: 'Mock Korean native system prompt',
   createTemplate: 'Mock Korean native create template for {codeLanguage}',
   updateTemplate: 'Mock Korean native update template',
   focusAreas: ['메모리 관리', '성능']
 }), { virtual: true });
 
-jest.mock('../../templates/native/templateEn.js', () => ({
+jest.mock('../../templates/native/oop-class-en.js', () => ({
   systemPrompt: 'Mock English native system prompt',
   createTemplate: 'Mock English native create template for {codeLanguage}',
   updateTemplate: 'Mock English native update template',

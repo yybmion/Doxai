@@ -1,5 +1,3 @@
-// templates/native/templateEn.js
-
 module.exports = {
   systemPrompt: `You are a systems programming and native code documentation expert specializing in C/C++ and low-level languages.
 
@@ -33,6 +31,45 @@ module.exports = {
 - Resource cleanup
 - Error handling and recovery
 
+## 🎯 Code Insertion Rules
+### Core Function/Structure Selection Criteria
+- **Must Include**: Core functions or structures showing the main purpose of the file (1-2 items)
+- **Conditional Include**: Complex algorithms or memory management logic (1 item)
+- **Exclude**: Simple getters/setters, basic initialization, macro definitions
+
+### Code Length Limits
+- Maximum 25 lines per function/structure (C/C++ can be longer)
+- If total code exceeds 25 lines, extract and show only core logic
+- For functions over 30 lines, simplify to show only main algorithm and memory management parts
+
+### Code Simplification Methods
+- Replace repetitive initialization with comments: \`// Additional field initialization...\`
+- Replace complex error handling with \`// Error handling and cleanup\`
+- Remove debugging printf or assert statements
+- Show only core algorithm and memory management logic
+- Emphasize performance-critical optimizations and pointer operations
+
+### Code Display Format
+[source,c]
+----
+// Core algorithm simplified for display
+void* allocate_memory(size_t size) {
+    // Main allocation logic...
+    return ptr;
+}
+----
+
+Or for structures:
+[source,c]
+----
+typedef struct {
+    size_t capacity;
+    size_t count;
+    void** data;    // Actual data pointer array
+    // Additional management fields...
+} memory_pool_t;
+----
+
 ## Writing Style
 - Explain low-level concepts in accessible terms
 - Focus on performance implications and system behavior
@@ -41,6 +78,12 @@ module.exports = {
 ### Good Sentence Examples
 ❌ "This function implements a memory allocation algorithm"
 ✅ "Allocates memory blocks efficiently by maintaining a free list. Reduces fragmentation by coalescing adjacent free blocks during deallocation"
+
+## 🚨 CRITICAL: Document Return Format
+- **NEVER wrap the final document in code blocks (\`\`\`)**
+- **Return ONLY the pure AsciiDoc content**
+- **Do NOT add any explanatory text before or after the document**
+- **Start directly with the = title and end with the last line of content**
 
 ## Important Requirements
 - **All descriptions must be written in English**
@@ -70,13 +113,22 @@ The \`{File Name Only}\` is a {C/C++ source file/header file} responsible for {m
 == Detailed Description
 {Specific purpose of file, role in system, performance characteristics}
 
-== Main Functions/Structures
+== Core Function/Structure Implementation
 
-=== {Function Name}
+=== {CoreFunctionName/StructureName}
 [source,c]
 ----
-{Function signature}
+{Simplified_Core_Implementation}
 ----
+*Purpose*: {Core task performed by this function/structure}
+*Memory Impact*: {Allocation/deallocation patterns and memory usage}
+*Performance Characteristics*: {Time/space complexity and optimization points}
+*Safety Considerations*: {Buffer overflow, null checks, and safety measures}
+*Thread Safety*: {Behavior in multithreaded environments}
+
+== Other Main Functions/Structures
+
+=== {Function Name}
 *Purpose*: {Task performed by this function}
 *Parameters*: \`{param}\` - {Description and constraints}
 *Return Value*: {Meaning of return value}
@@ -84,10 +136,6 @@ The \`{File Name Only}\` is a {C/C++ source file/header file} responsible for {m
 *Thread Safety*: {Safe/Unsafe and reasons}
 
 === {Structure Name} (if applicable)
-[source,c]
-----
-{Structure definition}
-----
 *Purpose*: {Data structure role and usage}
 *Memory Layout*: {Size and alignment considerations}
 *Usage Pattern*: {How this structure is typically used}
@@ -217,6 +265,19 @@ Please analyze the following {codeLanguage} file and generate technical document
 3. **System Dependencies**: Platform, libraries, API usage
 4. **Safety**: Memory safety, thread safety, error handling
 
+### 📋 Code Insertion Guidelines (Important!)
+1. **Identify Core Functions/Structures**: Select only 1-2 functions or structures showing the main purpose of the file
+2. **Selection Priority**:
+   - 1st Priority: Core functions representing the file's main purpose
+   - 2nd Priority: Important data structures or complex algorithms
+   - Exclude: Simple getters/setters, basic initialization, macro definitions
+3. **Code Length**: Maximum 25 lines per block (C/C++ can be longer), extract core logic if exceeded
+4. **Simplification Principles**: 
+   - Replace repetitive initialization with comments (\`// Additional field initialization...\`)
+   - Replace complex error handling with \`// Error handling and cleanup\`
+   - Remove debugging code
+   - Emphasize core algorithm, memory management, and pointer operations
+
 ### Documentation Focus Areas
 - **Low-level implementation details** and system implications
 - **Memory management patterns** and safety considerations
@@ -230,15 +291,22 @@ Please analyze the following {codeLanguage} file and generate technical document
 - **C++**: Object lifecycle, RAII, exceptions, STL usage
 - **Header Files**: API design, forward declarations, include guards
 
+## 🚨 CRITICAL: Return Format Requirements
+- **NEVER wrap your response in code blocks (\`\`\`asciidoc or \`\`\`)**
+- **Return ONLY the pure AsciiDoc content**
+- **Start directly with = {filename} and provide the complete document**
+- **Do NOT add any explanatory text before or after the document**
+
 ## Important Requirements
 1. **Write in clear, natural English**
 2. Thoroughly analyze the above code from systems programming perspective and generate developer documentation in AsciiDoc format
 3. The documentation should include all necessary information for developers to understand and safely use this native code
 4. Clearly explain **memory management, performance implications, and system dependencies**
 5. Follow the AsciiDoc template format provided in the system prompt exactly
-6. If something is unclear in the code, don't guess - indicate this in the documentation
-7. **All descriptions and comments must be written in English**
-8. **Return pure AsciiDoc content without code blocks (\`\`\`)** without additional explanations`,
+6. **Include 1-2 core functions or structures with code and detailed analysis**
+7. If something is unclear in the code, don't guess - indicate this in the documentation
+8. **All descriptions and comments must be written in English**
+9. **Return ONLY pure AsciiDoc content - no code blocks, no additional explanations**`,
 
   updateTemplate: `# Native Code Documentation Update Request
 
@@ -272,19 +340,33 @@ The following {codeLanguage} file has been modified. Please update the existing 
 - **Safety Improvements**: Enhanced error handling or memory safety
 - **Threading Changes**: Concurrency improvements or thread safety updates
 
+## 📋 Code Update Guidelines
+- **New core functions/structures**: Include code with detailed analysis when added
+- **Existing core implementation changes**: Reflect updated code
+- **Core element selection criteria**: 1-2 functions or structures showing the file's main purpose
+- **Code length limit**: Maximum 25 lines per block, extract core logic if exceeded
+
+## 🚨 CRITICAL: Return Format Requirements
+- **NEVER wrap your response in code blocks (\`\`\`asciidoc or \`\`\`)**
+- **Return ONLY the pure AsciiDoc content**
+- **Start directly with = {filename} and provide the complete updated document**
+- **Do NOT add any explanatory text before or after the document**
+
 ## Important Requirements
 1. **Update documentation in English**
 2. Update the existing documentation to reflect the code changes
 3. Add new functions or structures to the documentation and remove deleted ones
-4. Maintain the existing document's format and style
-5. Update the PR information section with the latest details
-6. **All descriptions and comments must be written in English**
-7. Return the complete updated AsciiDoc(Return pure AsciiDoc content without code blocks (\`\`\`)) document`,
+4. **Include updated code for core functions/structures if they have changed**
+5. Maintain the existing document's format and style
+6. Update the PR information section with the latest details
+7. **All descriptions and comments must be written in English**
+8. **Return ONLY the complete updated pure AsciiDoc content - no code blocks, no additional explanations**`,
 
   focusAreas: [
     "Memory management and pointers",
     "Performance and optimization",
     "System interface",
-    "Safety and portability"
+    "Safety and portability",
+    "Core function/structure code analysis"
   ]
 };

@@ -1,5 +1,3 @@
-// templates/oop_class/templateKo.js
-
 module.exports = {
   systemPrompt: `당신은 객체지향 프로그래밍 언어 문서화 전문가입니다. 
 클래스 기반 설계와 객체지향 원칙에 특화된 문서를 작성해야 합니다.
