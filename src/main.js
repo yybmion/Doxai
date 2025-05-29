@@ -2,13 +2,11 @@ const path = require('path');
 const core = require('@actions/core');
 const github = require('@actions/github');
 
-// Import utilities
 const GitHubClient = require('./github');
 const AIClient = require('./ai-client');
 const CommandParser = require('./command-parser');
 const FileFilter = require('./file-filter');
 const Logger = require('./logger');
-const { createDocsPrompt, createUpdateDocsPrompt, docsPromptTemplates } = require('./docs-prompt');
 const config = require('./config');
 
 /**
@@ -404,77 +402,6 @@ class DocumentationGenerator {
     const scope = command.options.scope !== 'all' ? ` [${command.options.scope}]` : '';
 
     return `docs: Update documentation for PR #${prNumber}${summary}${scope}`;
-  }
-
-  /**
-   * Process a single file for documentation
-   * @param {object} file - File to process
-   * @param {object} prDetails - PR details
-   * @param {string} docsBranch - Documentation branch
-   * @param {object} command - Command details
-   * @param {object} results - Results accumulator
-   */
-  async processFile(file, prDetails, docsBranch, command, results) {
-    try {
-      this.logger.info(`Processing file: ${file.filename}`);
-
-      // Get file content
-      const content = await this.githubClient.getFileContent(file.filename, prDetails.head);
-
-      // Generate documentation path
-      const basename = path.basename(file.filename, path.extname(file.filename));
-      const docsDir = `docs/${command.command}`;
-      const docFilename = `${docsDir}/${basename}.adoc`;
-
-      // Check for existing documentation
-      const { exists, content: existingDoc, hasChanged } = await this.checkExistingDoc(
-          file.filename,
-          docFilename,
-          docsBranch,
-          prDetails
-      );
-
-      if (exists && !hasChanged) {
-        this.logger.info(`Skipping ${file.filename} - no changes since last documentation`);
-        results.skipped.push({
-          source: file.filename,
-          doc: docFilename,
-          reason: 'Source unchanged'
-        });
-        return;
-      }
-
-      // Generate documentation
-      const docContent = await this.generateDocumentation(
-          file.filename,
-          content,
-          existingDoc,
-          prDetails,
-          command.options.lang
-      );
-
-      // Commit documentation
-      await this.githubClient.commitFile(
-          docsBranch,
-          docFilename,
-          docContent,
-          `docs: ${exists ? 'Update' : 'Generate'} documentation for ${basename} (PR #${prDetails.number})`
-      );
-
-      // Update results
-      if (exists) {
-        results.updated.push(docFilename);
-      } else {
-        results.generated.push(docFilename);
-      }
-
-    } catch (error) {
-      this.logger.error(`Failed to process file: ${file.filename}`, error);
-      results.failed.push({
-        filename: file.filename,
-        error: error.message
-      });
-    }
   }
 
   /**

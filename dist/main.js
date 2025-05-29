@@ -35212,12 +35212,6 @@ class DocsPromptGenerator {
     };
 
     // Template file names for different documentation languages
-    // Each language group folder contains these files:
-    // templates/oop_class/templateKo.js (Korean templates)
-    // templates/oop_class/templateEn.js (English templates)
-    // templates/functional/templateKo.js (Korean templates)
-    // templates/functional/templateEn.js (English templates)
-    // etc...
     this.templateFileNames = {
       ko: 'templateKo.js',  // Korean documentation templates
       en: 'templateEn.js'   // English documentation templates
@@ -36490,13 +36484,11 @@ const path = __nccwpck_require__(6928);
 const core = __nccwpck_require__(3063);
 const github = __nccwpck_require__(2083);
 
-// Import utilities
 const GitHubClient = __nccwpck_require__(2147);
 const AIClient = __nccwpck_require__(9000);
 const CommandParser = __nccwpck_require__(8931);
 const FileFilter = __nccwpck_require__(1361);
 const Logger = __nccwpck_require__(1612);
-const { createDocsPrompt, createUpdateDocsPrompt, docsPromptTemplates } = __nccwpck_require__(9702);
 const config = __nccwpck_require__(3718);
 
 /**
@@ -36892,77 +36884,6 @@ class DocumentationGenerator {
     const scope = command.options.scope !== 'all' ? ` [${command.options.scope}]` : '';
 
     return `docs: Update documentation for PR #${prNumber}${summary}${scope}`;
-  }
-
-  /**
-   * Process a single file for documentation
-   * @param {object} file - File to process
-   * @param {object} prDetails - PR details
-   * @param {string} docsBranch - Documentation branch
-   * @param {object} command - Command details
-   * @param {object} results - Results accumulator
-   */
-  async processFile(file, prDetails, docsBranch, command, results) {
-    try {
-      this.logger.info(`Processing file: ${file.filename}`);
-
-      // Get file content
-      const content = await this.githubClient.getFileContent(file.filename, prDetails.head);
-
-      // Generate documentation path
-      const basename = path.basename(file.filename, path.extname(file.filename));
-      const docsDir = `docs/${command.command}`;
-      const docFilename = `${docsDir}/${basename}.adoc`;
-
-      // Check for existing documentation
-      const { exists, content: existingDoc, hasChanged } = await this.checkExistingDoc(
-          file.filename,
-          docFilename,
-          docsBranch,
-          prDetails
-      );
-
-      if (exists && !hasChanged) {
-        this.logger.info(`Skipping ${file.filename} - no changes since last documentation`);
-        results.skipped.push({
-          source: file.filename,
-          doc: docFilename,
-          reason: 'Source unchanged'
-        });
-        return;
-      }
-
-      // Generate documentation
-      const docContent = await this.generateDocumentation(
-          file.filename,
-          content,
-          existingDoc,
-          prDetails,
-          command.options.lang
-      );
-
-      // Commit documentation
-      await this.githubClient.commitFile(
-          docsBranch,
-          docFilename,
-          docContent,
-          `docs: ${exists ? 'Update' : 'Generate'} documentation for ${basename} (PR #${prDetails.number})`
-      );
-
-      // Update results
-      if (exists) {
-        results.updated.push(docFilename);
-      } else {
-        results.generated.push(docFilename);
-      }
-
-    } catch (error) {
-      this.logger.error(`Failed to process file: ${file.filename}`, error);
-      results.failed.push({
-        filename: file.filename,
-        error: error.message
-      });
-    }
   }
 
   /**
