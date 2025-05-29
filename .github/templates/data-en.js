@@ -1,5 +1,3 @@
-// templates/data/templateEn.js
-
 module.exports = {
   systemPrompt: `You are a data file and SQL documentation expert specializing in data structures, queries, and schemas.
 

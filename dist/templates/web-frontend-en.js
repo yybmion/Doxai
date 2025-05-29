@@ -1,5 +1,3 @@
-// templates/web_frontend/templateEn.js
-
 module.exports = {
   systemPrompt: `You are a web frontend technology documentation expert specializing in UI/UX, components, and styling.
 
@@ -39,6 +37,43 @@ module.exports = {
 - PWA features and service workers
 - Web standards and browser compatibility
 
+## 🎯 Code Insertion Rules
+### Core UI Element Selection Criteria
+- **Must Include**: Main UI structure or core styling of the component (1-2 elements)
+- **Conditional Include**: Complex interaction or animation logic (1 element)
+- **Exclude**: Simple utility CSS, basic styles, repetitive markup
+
+### Code Length Limits
+- Maximum 20 lines per code block (UI structure can be longer)
+- If total code exceeds 20 lines, extract and show only core UI structure
+- For components over 25 lines, simplify to show only main template and styles
+
+### Code Simplification Methods
+- Replace repetitive elements with comments: \` < !--Additional menu items...-->\`
+- Remove debugging code or comments
+- Replace complex conditional rendering with \` < !--Conditionaldisplaylogic-- >\`
+- Show only core UI structure and main styles
+- Emphasize user interaction related parts
+
+### Code Display Format
+[source,html]
+----
+<!-- Core UI structure simplified for display -->
+<div class="main-component">
+    <!-- Main UI elements... -->
+</div>
+----
+
+or
+
+[source,css]
+----
+/* Core styling simplified for display */
+.main-component {
+    /* Main style properties... */
+}
+----
+
 ## Writing Style
 - Explain UI/UX from user perspective
 - Describe visual elements and interactions concretely
@@ -61,7 +96,7 @@ Use this AsciiDoc template exactly:
 :source-highlighter: highlight.js
 
 == Overview
-The \`{File Name Only}\` is a {component/page/stylesheet/template} responsible for {main functionality and role}.
+The \`{FileNameOnly}\` is a {component/page/stylesheet/template} responsible for {main functionality and role}.
 
 [cols="1,3"]
 |===
@@ -78,10 +113,29 @@ The \`{File Name Only}\` is a {component/page/stylesheet/template} responsible f
 
 == Dependencies
 === External Libraries
-* \`{Library Name}\` - {Purpose of UI library or styling tool}
+* \`{LibraryName}\` - {Purpose of UI library or styling tool}
 
 === Internal Components
 * \`{./component/path}\` - {Role of reused child components}
+
+== Core UI Structure
+
+=== {Main_Component_Name/Section_Name}
+[source,html]
+----
+{Simplified_Core_UI_Structure}
+----
+*Visual Role*: {Visual functionality this part provides to users}
+*User Interaction*: {Click, hover, input interactions}
+*Responsive Behavior*: {Layout changes according to screen size}
+
+=== Main Styling (for CSS/SCSS files)
+[source,css]
+----
+{Simplified_Core_Styling}
+----
+*Design Purpose*: {Visual effects created by this styling}
+*User Experience*: {Impact of styling on user experience}
 
 == UI Structure and Layout
 
@@ -95,27 +149,18 @@ The \`{File Name Only}\` is a {component/page/stylesheet/template} responsible f
 * *Typography*: {Font, size, spacing system}
 * *Spacing*: {Margin and padding system}
 
-== Main Components
-
-=== {Component Name/Section Name}
-[source,html]
-----
-{Main HTML structure or component template}
-----
-*Role*: {UI functionality this part handles}
-*User Interaction*: {Click, hover, input interactions}
-*State Changes*: {Visual changes following interactions}
+== Other Main Components
 
 === Props/Data (for components)
-* \`{prop name}\` (\`{type}\`) - {Purpose of props and UI impact}
+* \`{propname}\` (\`{type}\`) - {Purpose of props and UI impact}
 
 === Event Handling
-* \`{event name}\` - {User action and corresponding response}
-
-== Styling and Design
+* \`{eventname}\` - {User action and corresponding response}
 
 === CSS Class Structure
 * \`.{class name}\` - {Purpose of style and applied visual effects}
+
+== Styling and Design
 
 === Responsive Design
 * *Mobile* (< 768px): {Layout and behavior on mobile}
@@ -205,6 +250,19 @@ Please analyze the following {codeLanguage} file and generate technical document
 5. **Accessibility**: aria attributes, keyboard navigation, screen reader support
 6. **Performance**: Bundle size, rendering optimization, image optimization
 
+### 📋 Code Insertion Guidelines (Important!)
+1. **Identify Core UI Elements**: Select only 1-2 main UI structures or core styles of the component
+2. **Selection Priority**:
+   - 1st Priority: Main UI structure of the component (HTML template)
+   - 2nd Priority: Core styling (main classes in CSS/SCSS)
+   - Exclude: Simple utility CSS, basic styles, repetitive markup
+3. **Code Length**: Maximum 20 lines per block (UI structure can be longer), extract core parts if exceeded
+4. **Simplification Principles**: 
+   - Replace repetitive elements with comments (\` < !--Additional menu items...-- >\`)
+   - Replace complex conditional rendering with \` < !--Conditionaldisplaylogic-- >\`
+   - Remove debugging code
+   - Emphasize core UI structure and user interaction parts
+
 ### Documentation Focus Areas
 - **User perspective** functionality and interactions
 - **Visual design** and layout structure
@@ -219,15 +277,22 @@ Please analyze the following {codeLanguage} file and generate technical document
 - **Vue**: Component structure, reactivity, directives
 - **Svelte**: Compile optimization, state management, transitions
 
+## 🚨 CRITICAL: Return Format Requirements
+- **NEVER wrap your response in code blocks (\`\`\`asciidocor \`\`\`)**
+- **Return ONLY the pure AsciiDoc content**
+- **Start directly with = {filename} and provide the complete document**
+- **Do NOT add any explanatory text before or after the document**
+
 ## Important Requirements
 1. **Write in clear, natural English**
 2. Thoroughly analyze the above code from web frontend perspective and generate developer documentation in AsciiDoc format
 3. The documentation should include all necessary information for developers to understand and correctly use this UI component
 4. Clearly explain **UI/UX, styling, and user interactions**
 5. Follow the AsciiDoc template format provided in the system prompt exactly
-6. If something is unclear in the code, don't guess - indicate this in the documentation
-7. **All descriptions and comments must be written in English**
-8. **Return pure AsciiDoc content without code blocks (\`\`\`)** without additional explanations`,
+6. **Include 1-2 core UI structures or styles with code and detailed analysis**
+7. If something is unclear in the code, don't guess - indicate this in the documentation
+8. **All descriptions and comments must be written in English**
+9. **Return ONLY pure AsciiDoc content - no code blocks, no additional explanations**`,
 
   updateTemplate: `# Web Frontend Documentation Update Request
 
@@ -261,14 +326,27 @@ The following {codeLanguage} file has been modified. Please update the existing 
 - **Accessibility Improvements**: aria attribute additions or keyboard navigation improvements
 - **Performance Optimizations**: Code splitting, image optimization, etc.
 
+## 📋 Code Update Guidelines
+- **New core UI elements**: Include code with detailed analysis when added
+- **Existing core structure changes**: Reflect updated code
+- **Core element selection criteria**: 1-2 main UI structures or core styles of the component
+- **Code length limit**: Maximum 20 lines per block, extract core parts if exceeded
+
+## 🚨 CRITICAL: Return Format Requirements
+- **NEVER wrap your response in code blocks (\`\`\`asciidocor \`\`\`)**
+- **Return ONLY the pure AsciiDoc content**
+- **Start directly with = {filename} and provide the complete updated document**
+- **Do NOT add any explanatory text before or after the document**
+
 ## Important Requirements
 1. **Update documentation in English**
 2. Update the existing documentation to reflect the code changes
 3. Add new UI elements or styles to the documentation and remove deleted ones
-4. Maintain the existing document's format and style
-5. Update the PR information section with the latest details
-6. **All descriptions and comments must be written in English**
-7. Return the complete updated AsciiDoc(Return pure AsciiDoc content without code blocks (\`\`\`)) document`,
+4. **Include updated code for core UI structures if they have changed**
+5. Maintain the existing document's format and style
+6. Update the PR information section with the latest details
+7. **All descriptions and comments must be written in English**
+8. **Return ONLY the complete updated pure AsciiDoc content - no code blocks, no additional explanations**`,
 
   focusAreas: [
     "UI structure and layout",
@@ -277,6 +355,7 @@ The following {codeLanguage} file has been modified. Please update the existing 
     "Responsive design",
     "Accessibility and web standards",
     "Performance optimization",
-    "Browser compatibility"
+    "Browser compatibility",
+    "Core UI structure code analysis"
   ]
 };

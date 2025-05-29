@@ -1,5 +1,3 @@
-// templates/functional/templateEn.js
-
 module.exports = {
   systemPrompt: `You are a functional programming documentation expert specializing in function-centered design and module systems.
 
@@ -39,6 +37,34 @@ module.exports = {
 - Tail recursion optimization
 - Lazy loading and memoization
 
+## 🎯 Code Insertion Rules
+### Core Function Selection Criteria
+- **Must Include**: Core exported functions representing the main purpose of the module (1-2 functions)
+- **Conditional Include**: Functions with complex data transformation logic (1 function)
+- **Exclude**: Simple utility functions, getter functions, simple wrapper functions
+
+### Code Length Limits
+- Maximum 15 lines per function
+- If total code exceeds 15 lines, extract and show only core transformation logic
+- For functions over 20 lines, simplify to show only data transformation flow
+
+### Code Simplification Methods
+- Replace error handling with comments: \`// Returns empty array on error\`
+- Remove logging or debugging code
+- Replace complex validation with \`// Input validation\`
+- Show only core data transformation logic
+- Emphasize function composition and chaining parts
+
+### Code Display Format
+[source,javascript]
+----
+// Core data transformation logic simplified for display
+export const transformData = (input) => {
+    // Main transformation steps...
+    return transformedResult;
+}
+----
+
 ## Writing Style
 - Clearly explain input-transformation-output flow of functions
 - Focus on process-centered explanation of data transformation
@@ -47,6 +73,12 @@ module.exports = {
 ### Good Sentence Examples
 ❌ "This function performs filtering and mapping operations on arrays"
 ✅ "Filters active users from the user list and extracts only names and emails to create a new list"
+
+## 🚨 CRITICAL: Document Return Format
+- **NEVER wrap the final document in code blocks (\`\`\`)**
+- **Return ONLY the pure AsciiDoc content**
+- **Do NOT add any explanatory text before or after the document**
+- **Start directly with the = title and end with the last line of content**
 
 ## Important Requirements
 - **All descriptions must be written in English**
@@ -83,13 +115,22 @@ The \`{File Name Only}\` is a {module/library/package/namespace} responsible for
 === Internal Modules
 * \`{./relative/path}\` - {Module role and provided functionality}
 
-== Main Exported Functions
+== Core Function Implementation
 
-=== {FunctionName}
+=== {CoreFunctionName}
 [source,javascript]
 ----
-{Function signature}
+{Simplified_Core_Function_Code}
 ----
+*Purpose*: {Problem this function solves or transformation it performs}
+*Purity*: {Pure function/Has side effects} - {Types of side effects}
+*Data Flow*:
+* {Input_Data_Format} → {Transformation_Process} → {Output_Data_Format}
+*Time Complexity*: {Big O notation} - {Performance characteristics}
+
+== Other Main Exported Functions
+
+=== {FunctionName}
 *Purpose*: {Problem this function solves or transformation it performs}
 *Purity*: {Pure function/Has side effects} - {Types of side effects}
 *Parameters*:
@@ -205,6 +246,19 @@ Please analyze the following {codeLanguage} file and generate technical document
 5. **Asynchronous Processing**: Promise, async/await, Future patterns
 6. **Function Composition**: Composing small functions to create complex logic
 
+### 📋 Code Insertion Guidelines (Important!)
+1. **Identify Core Functions**: Select only 1-2 functions that show the module's main purpose
+2. **Selection Priority**:
+   - 1st Priority: Core exported functions representing the module's main purpose
+   - 2nd Priority: Functions with complex data transformation logic
+   - Exclude: Simple utilities, getters, simple wrapper functions
+3. **Code Length**: Maximum 15 lines per function, extract core transformation logic if exceeded
+4. **Simplification Principles**: 
+   - Summarize error handling as comments (\`// Returns empty array on error\`)
+   - Replace complex validation with \`// Input validation\`
+   - Remove logging/debugging code
+   - Emphasize core data transformation logic and function composition
+
 ### Documentation Focus Areas
 - **Input-transformation-output flow** of functions clearly explained
 - **Purity and side effects** presence and reasons
@@ -220,15 +274,22 @@ Please analyze the following {codeLanguage} file and generate technical document
 - **Rust**: Ownership, lifetimes, pattern matching, zero-cost abstractions
 - **Dart**: Futures, streams, generators, widget trees
 
+## 🚨 CRITICAL: Return Format Requirements
+- **NEVER wrap your response in code blocks (\`\`\`asciidoc or \`\`\`)**
+- **Return ONLY the pure AsciiDoc content**
+- **Start directly with = {filename} and provide the complete document**
+- **Do NOT add any explanatory text before or after the document**
+
 ## Important Requirements
 1. **Write in clear, natural English**
 2. Thoroughly analyze the above code from functional programming perspective and generate developer documentation in AsciiDoc format
 3. The documentation should include all necessary information for developers to understand and correctly use this module's functions
 4. Clearly explain **function purposes, transformation logic, and composition methods**
 5. Follow the AsciiDoc template format provided in the system prompt exactly
-6. If something is unclear in the code, don't guess - indicate this in the documentation
-7. **All descriptions and comments must be written in English**
-8. **Return pure AsciiDoc content without code blocks (\`\`\`)** without additional explanations`,
+6. **Include 1-2 core functions with code and detailed analysis**
+7. If something is unclear in the code, don't guess - indicate this in the documentation
+8. **All descriptions and comments must be written in English**
+9. **Return ONLY pure AsciiDoc content - no code blocks, no additional explanations**`,
 
   updateTemplate: `# Functional Programming Documentation Update Request
 
@@ -262,14 +323,27 @@ The following {codeLanguage} file has been modified. Please update the existing 
 - **Data transformation logic**: Changes in input-processing-output flow
 - **Performance optimizations**: Addition of memoization, lazy evaluation, etc.
 
+## 📋 Code Update Guidelines
+- **New core functions**: Include code with detailed analysis when added
+- **Existing core function changes**: Reflect updated code
+- **Core function selection criteria**: 1-2 functions representing the module's main purpose
+- **Code length limit**: Maximum 15 lines per function, extract core logic if exceeded
+
+## 🚨 CRITICAL: Return Format Requirements
+- **NEVER wrap your response in code blocks (\`\`\`asciidoc or \`\`\`)**
+- **Return ONLY the pure AsciiDoc content**
+- **Start directly with = {filename} and provide the complete updated document**
+- **Do NOT add any explanatory text before or after the document**
+
 ## Important Requirements
 1. **Update documentation in English**
 2. Update the existing documentation to reflect the code changes
 3. Add new functions to the documentation and remove deleted functions
-4. Maintain the existing document's format and style
-5. Update the PR information section with the latest details
-6. **All descriptions and comments must be written in English**
-7. Return the complete updated AsciiDoc(Return pure AsciiDoc content without code blocks (\`\`\`)) document`,
+4. **Include updated code for core functions if they have changed**
+5. Maintain the existing document's format and style
+6. Update the PR information section with the latest details
+7. **All descriptions and comments must be written in English**
+8. **Return ONLY the complete updated pure AsciiDoc content - no code blocks, no additional explanations**`,
 
   focusAreas: [
     "Function design and responsibility division",
@@ -278,6 +352,7 @@ The following {codeLanguage} file has been modified. Please update the existing 
     "Purity and side effects",
     "Asynchronous processing methods",
     "Performance and memory efficiency",
-    "Error handling and propagation"
+    "Error handling and propagation",
+    "Core function code analysis"
   ]
 };

@@ -1,5 +1,3 @@
-// templates/functional/templateEn.js
-
 module.exports = {
   systemPrompt: `You are a functional programming documentation expert specializing in function-centered design and module systems.
 

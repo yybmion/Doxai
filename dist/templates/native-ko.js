@@ -1,5 +1,3 @@
-// templates/native/templateKo.js
-
 module.exports = {
   systemPrompt: `당신은 시스템 프로그래밍 및 네이티브 코드 문서화 전문가입니다. 
 C/C++ 등 저수준 언어에 특화된 문서를 작성해야 합니다.

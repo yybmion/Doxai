@@ -1,5 +1,3 @@
-// templates/native/templateEn.js
-
 module.exports = {
   systemPrompt: `You are a systems programming and native code documentation expert specializing in C/C++ and low-level languages.
 
